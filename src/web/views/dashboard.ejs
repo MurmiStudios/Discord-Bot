@@ -1,0 +1,74 @@
+<h1>Übersicht</h1>
+<p class="unterzeile">Stand des Bots und der letzten Vorgänge.</p>
+
+<% if (!botVerbunden) { %>
+  <div class="hinweis hinweis--fehler">
+    Der Bot ist nicht mit dem Server verbunden. Prüfe <code>DISCORD_TOKEN</code> und
+    <code>GUILD_ID</code> in der <code>.env</code> und ob der Bot auf dem Server ist.
+  </div>
+<% } %>
+
+<div class="karte raster raster--kennzahlen">
+  <div class="kennzahl"><span class="wert"><%= kennzahlen.mitglieder %></span><span class="beschriftung">Mitglieder</span></div>
+  <div class="kennzahl"><span class="wert"><%= kennzahlen.rollen %></span><span class="beschriftung">Rollen</span></div>
+  <div class="kennzahl"><span class="wert"><%= kennzahlen.regeln %></span><span class="beschriftung">Aktive Regeln</span></div>
+  <div class="kennzahl"><span class="wert"><%= kennzahlen.vorlagen %></span><span class="beschriftung">Bildvorlagen</span></div>
+  <div class="kennzahl"><span class="wert"><%= kennzahlen.momentaufnahmen %></span><span class="beschriftung">Erfasste Mitglieder</span></div>
+</div>
+
+<div class="raster raster--zwei">
+  <div class="karte">
+    <h2>Letzte 24 Stunden</h2>
+    <table>
+      <tbody>
+        <tr><td>Zugestellt</td><td><span class="abzeichen abzeichen--ok"><%= statistik.ok %></span></td></tr>
+        <tr><td>Fehlgeschlagen</td><td><span class="abzeichen abzeichen--failed"><%= statistik.failed %></span></td></tr>
+        <tr><td>Übersprungen</td><td><span class="abzeichen abzeichen--skipped"><%= statistik.skipped %></span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="karte">
+    <h2>Einrichtung</h2>
+    <table>
+      <tbody>
+        <tr>
+          <td>Willkommensnachricht</td>
+          <td><span class="abzeichen abzeichen--<%= willkommenAktiv ? 'ok' : 'skipped' %>"><%= willkommenAktiv ? 'Aktiv' : 'Aus' %></span></td>
+        </tr>
+        <tr>
+          <td>Höchste Bot-Rolle</td>
+          <td><%= botRolle ?? '—' %></td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="hilfe">
+      Rollen, die über der höchsten Bot-Rolle stehen, kann der Bot nicht entfernen.
+      Schiebe die Bot-Rolle in den Servereinstellungen nach oben, wenn eine Regel nicht greift.
+    </p>
+  </div>
+</div>
+
+<div class="karte">
+  <h2>Letzte Vorgänge</h2>
+  <% if (letzte.length === 0) { %>
+    <p class="leer"><%= t('app.keineDaten') %></p>
+  <% } else { %>
+    <div class="tabellen-huelle">
+      <table>
+        <thead><tr><th>Zeit</th><th>Art</th><th>Status</th><th>Details</th></tr></thead>
+        <tbody>
+          <% letzte.forEach((e) => { %>
+            <tr>
+              <td><%= new Date(e.ts).toLocaleString('de-CH') %></td>
+              <td><%= t('logKind.' + e.kind, e.kind) %></td>
+              <td><span class="abzeichen abzeichen--<%= e.status %>"><%= statusText(e.status, e.kind) %></span></td>
+              <td><%= e.detail %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <p><a href="/protokoll">Vollständiges Protokoll ansehen</a></p>
+  <% } %>
+</div>

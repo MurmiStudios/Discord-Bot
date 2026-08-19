@@ -1,0 +1,31 @@
+<h1>Kanal-Nachricht</h1>
+<p class="unterzeile">Sende eine Nachricht in einen Kanal des Servers.</p>
+
+<form method="post" action="/kanaele" class="karte">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <label>
+    <span class="feldname">Kanal</span>
+    <select name="channelId" required>
+      <option value="">— bitte wählen —</option>
+      <% kanaele.forEach((k) => { %>
+        <option value="<%= k.id %>" <%= k.beschreibbar ? '' : 'disabled' %>>
+          <%= k.parent ? k.parent + ' / ' : '' %>#<%= k.name %><%= k.beschreibbar ? '' : ' — ' + k.grund %>
+        </option>
+      <% }) %>
+    </select>
+    <p class="hilfe">Kanäle ohne Schreibrecht des Bots sind nicht auswählbar.</p>
+  </label>
+
+  <label>
+    <span class="feldname">Titel (optional — erzeugt ein Embed)</span>
+    <input type="text" name="title" maxlength="256" placeholder="z. B. Ankündigung">
+  </label>
+
+  <label>
+    <span class="feldname">Text</span>
+    <textarea name="content" maxlength="4000" placeholder="Deine Nachricht …"></textarea>
+  </label>
+
+  <button class="knopf" type="submit"><%= t('app.senden') %></button>
+</form>

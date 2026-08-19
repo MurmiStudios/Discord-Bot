@@ -1,0 +1,54 @@
+<h1>Willkommensnachricht</h1>
+<p class="unterzeile">Wird als Direktnachricht verschickt, sobald jemand dem Server beitritt.</p>
+
+<form method="post" action="/willkommen" class="karte">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <label class="kontrollkaestchen">
+    <input type="checkbox" name="enabled" <%= einstellungen.enabled ? 'checked' : '' %>>
+    <span>Willkommensnachricht aktiv</span>
+  </label>
+
+  <label>
+    <span class="feldname">Titel (optional — erzeugt ein Embed)</span>
+    <input type="text" name="title" maxlength="256" value="<%= einstellungen.title %>" placeholder="Willkommen!">
+  </label>
+
+  <label>
+    <span class="feldname">Text</span>
+    <textarea name="body" maxlength="3000"><%= einstellungen.body %></textarea>
+  </label>
+
+  <label>
+    <span class="feldname">Bildvorlage (optional)</span>
+    <select name="templateId">
+      <option value="">— ohne Bild —</option>
+      <% vorlagen.forEach((v) => { %>
+        <option value="<%= v.id %>" <%= einstellungen.templateId === v.id ? 'selected' : '' %>>
+          <%= v.name %> (<%= v.width %>×<%= v.height %>)
+        </option>
+      <% }) %>
+    </select>
+    <% if (vorlagen.length === 0) { %>
+      <p class="hilfe">Noch keine Vorlage vorhanden — <a href="/vorlagen/neu">jetzt eine anlegen</a>.</p>
+    <% } %>
+  </label>
+
+  <div class="knopfreihe">
+    <button class="knopf" type="submit"><%= t('app.speichern') %></button>
+  </div>
+</form>
+
+<div class="karte">
+  <h2>Testen</h2>
+  <p class="hilfe">
+    Schickt dir die gespeicherte Willkommensnachricht als DM — inklusive
+    generiertem Bild mit deinem Profilbild und Namen.
+  </p>
+  <form method="post" action="/willkommen/test">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <button class="knopf knopf--leise" type="submit">Test-DM an mich senden</button>
+  </form>
+</div>
+
+<%- include('partials/platzhalter') %>

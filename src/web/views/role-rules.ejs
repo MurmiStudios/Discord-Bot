@@ -1,0 +1,112 @@
+<h1>Rollenregeln</h1>
+<p class="unterzeile">
+  Wenn ein Mitglied die auslösende Rolle erhält, entzieht der Bot ihm automatisch
+  die ausgewählten Rollen. Nützlich für Rollen, die sich gegenseitig ausschliessen.
+</p>
+
+<% if (!botVerbunden) { %>
+  <div class="hinweis hinweis--fehler">Der Bot ist nicht verbunden — Rollen können nicht geladen werden.</div>
+<% } else if (nichtVerwaltbar > 0) { %>
+  <div class="hinweis hinweis--warnung">
+    <%= nichtVerwaltbar %> Rolle(n) kann der Bot nicht verwalten. Sie sind unten nicht auswählbar.
+    Meist steht die Rolle über der Bot-Rolle — verschiebe die Bot-Rolle in den
+    Servereinstellungen nach oben.
+  </div>
+<% } %>
+
+<div class="karte">
+  <h2>Neue Regel</h2>
+  <form method="post" action="/rollenregeln">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <label>
+      <span class="feldname">Wenn diese Rolle vergeben wird …</span>
+      <select name="triggerRoleId" required>
+        <option value="">— bitte wählen —</option>
+        <% rollen.forEach((r) => { %>
+          <option value="<%= r.id %>"><%= r.name %></option>
+        <% }) %>
+      </select>
+    </label>
+
+    <label>
+      <span class="feldname">… dann diese Rollen entfernen (Mehrfachauswahl mit Strg/Cmd)</span>
+      <select name="removeRoleIds" multiple size="8" required>
+        <% rollen.forEach((r) => { %>
+          <option value="<%= r.id %>" <%= r.verwaltbar ? '' : 'disabled' %>>
+            <%= r.name %><%= r.verwaltbar ? '' : ' — ' + r.grund %>
+          </option>
+        <% }) %>
+      </select>
+    </label>
+
+    <label>
+      <span class="feldname">Notiz (optional)</span>
+      <input type="text" name="note" maxlength="200" placeholder="z. B. Ränge schliessen sich gegenseitig aus">
+    </label>
+
+    <label class="kontrollkaestchen">
+      <input type="checkbox" name="enabled" checked>
+      <span>Regel sofort aktivieren</span>
+    </label>
+
+    <button class="knopf" type="submit">Regel anlegen</button>
+  </form>
+</div>
+
+<div class="karte">
+  <h2>Bestehende Regeln</h2>
+  <% if (regeln.length === 0) { %>
+    <p class="leer">Noch keine Regel angelegt.</p>
+  <% } else { %>
+    <div class="tabellen-huelle">
+      <table>
+        <thead>
+          <tr><th>Auslöser</th><th>Entfernt</th><th>Notiz</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% regeln.forEach((r) => { %>
+            <tr>
+              <td><strong><%= r.triggerName %></strong></td>
+              <td>
+                <%= r.entfernenNamen.join(', ') %>
+                <% r.warnungen.forEach((w) => { %>
+                  <div class="warnung-rolle">⚠ <%= w %></div>
+                <% }) %>
+              </td>
+              <td><%= r.note || '—' %></td>
+              <td>
+                <span class="abzeichen abzeichen--<%= r.enabled ? 'ok' : 'skipped' %>">
+                  <%= r.enabled ? 'Aktiv' : 'Deaktiviert' %>
+                </span>
+              </td>
+              <td>
+                <div class="knopfreihe">
+                  <form method="post" action="/rollenregeln/<%= r.id %>/umschalten">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button class="knopf knopf--leise" type="submit"><%= r.enabled ? 'Deaktivieren' : 'Aktivieren' %></button>
+                  </form>
+                  <form method="post" action="/rollenregeln/<%= r.id %>/loeschen" data-bestaetigen="<%= t('app.bestaetigen') %>">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button class="knopf knopf--gefahr" type="submit"><%= t('app.loeschen') %></button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</div>
+
+<div class="karte">
+  <h2>Wie die Auswertung arbeitet</h2>
+  <p class="hilfe">
+    Regeln reagieren nur auf <strong>hinzugefügte</strong> Rollen und entfernen nur.
+    Dadurch kann keine Endlosschleife entstehen: entfernt der Bot eine Rolle, löst das
+    zwar erneut ein Ereignis aus, doch dabei wurde nichts hinzugefügt — die Auswertung
+    endet sofort. Eine gerade vergebene Rolle wird nie wieder entzogen, auch nicht bei
+    sich widersprechenden Regeln.
+  </p>
+</div>

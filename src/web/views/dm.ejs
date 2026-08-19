@@ -1,0 +1,63 @@
+<h1>Direktnachricht</h1>
+<p class="unterzeile">Wähle Empfänger und sende ihnen eine DM — auf Wunsch mit generiertem Bild.</p>
+
+<form method="post" action="/dm" class="karte" id="dm-formular">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <label>
+    <span class="feldname">Empfänger suchen</span>
+    <input type="search" id="mitglied-suche" placeholder="Name eingeben …" autocomplete="off">
+  </label>
+
+  <div class="auswahl-liste" id="mitglied-liste">
+    <% mitglieder.slice(0, 100).forEach((m) => { %>
+      <div class="auswahl-zeile" data-id="<%= m.id %>" data-name="<%= m.displayName %>">
+        <img src="<%= m.avatarUrl %>" alt="" width="24" height="24">
+        <span><%= m.displayName %></span>
+        <span class="tag">@<%= m.username %></span>
+      </div>
+    <% }) %>
+  </div>
+
+  <div class="zeile" style="margin-top:0.75rem">
+    <label>
+      <span class="feldname">Oder alle Mitglieder einer Rolle übernehmen</span>
+      <select id="rollen-auswahl">
+        <option value="">— Rolle wählen —</option>
+        <% rollen.forEach((r) => { %>
+          <option value="<%= r.id %>"><%= r.name %> (<%= r.memberCount %>)</option>
+        <% }) %>
+      </select>
+    </label>
+    <button class="knopf knopf--leise" type="button" id="rolle-uebernehmen">Übernehmen</button>
+  </div>
+
+  <p class="feldname" style="margin-top:1rem">
+    Gewählte Empfänger (<span id="anzahl">0</span> / <%= maxEmpfaenger %>)
+  </p>
+  <div class="gewaehlte" id="gewaehlte"></div>
+
+  <label style="margin-top:1rem">
+    <span class="feldname">Titel (optional — erzeugt ein Embed)</span>
+    <input type="text" name="title" maxlength="256">
+  </label>
+
+  <label>
+    <span class="feldname">Text</span>
+    <textarea name="content" maxlength="3000" placeholder="Hallo {user}, …"></textarea>
+  </label>
+
+  <label>
+    <span class="feldname">Bildvorlage (optional)</span>
+    <select name="templateId">
+      <option value="">— ohne Bild —</option>
+      <% vorlagen.forEach((v) => { %>
+        <option value="<%= v.id %>"><%= v.name %> (<%= v.width %>×<%= v.height %>)</option>
+      <% }) %>
+    </select>
+  </label>
+
+  <button class="knopf" type="submit" id="absenden" disabled><%= t('app.senden') %></button>
+</form>
+
+<%- include('partials/platzhalter') %>

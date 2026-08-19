@@ -1,0 +1,33 @@
+<h1>Bildvorlagen</h1>
+<p class="unterzeile">
+  Vorlagen bestimmen, wie die generierten Karten aussehen — Hintergrund, Position
+  von Profilbild und Texten, Farben und Schriftgrössen.
+</p>
+
+<div class="knopfreihe" style="margin-bottom:1.15rem">
+  <a class="knopf" href="/vorlagen/neu">Neue Vorlage</a>
+</div>
+
+<% if (vorlagen.length === 0) { %>
+  <div class="karte"><p class="leer">Noch keine Vorlage angelegt.</p></div>
+<% } else { %>
+  <div class="vorlagen-galerie">
+    <% vorlagen.forEach((v) => { %>
+      <div class="karte vorlagen-kachel">
+        <h2 style="margin-top:0"><%= v.name %></h2>
+        <p class="hilfe">
+          <%= v.kind === 'welcome' ? 'Willkommen' : v.kind === 'role' ? 'Rolle' : 'Allgemein' %>
+          · <%= v.width %>×<%= v.height %>
+          · <%= v.backgroundFile ? 'mit Hintergrundbild' : 'einfarbig' %>
+        </p>
+        <div class="knopfreihe">
+          <a class="knopf knopf--leise" href="/vorlagen/<%= v.id %>"><%= t('app.bearbeiten') %></a>
+          <form method="post" action="/vorlagen/<%= v.id %>/loeschen" data-bestaetigen="<%= t('app.bestaetigen') %>">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="knopf knopf--gefahr" type="submit"><%= t('app.loeschen') %></button>
+          </form>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+<% } %>

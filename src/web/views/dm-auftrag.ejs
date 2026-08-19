@@ -1,0 +1,33 @@
+<h1>Versandergebnis</h1>
+<p class="unterzeile"><%= auftrag.titel %></p>
+
+<div class="karte" id="auftrag" data-id="<%= auftrag.id %>">
+  <div class="raster raster--kennzahlen">
+    <div class="kennzahl"><span class="wert" id="z-erledigt"><%= auftrag.erledigt %></span><span class="beschriftung">von <%= auftrag.gesamt %> verarbeitet</span></div>
+    <div class="kennzahl"><span class="wert" id="z-erfolg"><%= auftrag.erfolg %></span><span class="beschriftung">zugestellt</span></div>
+    <div class="kennzahl"><span class="wert" id="z-fehler"><%= auftrag.fehler %></span><span class="beschriftung">fehlgeschlagen</span></div>
+  </div>
+  <p id="z-status" class="hilfe">
+    <%= auftrag.fertig ? 'Versand abgeschlossen.' : 'Versand läuft — die Seite aktualisiert sich automatisch.' %>
+  </p>
+</div>
+
+<div class="karte">
+  <h2>Einzelergebnisse</h2>
+  <div class="tabellen-huelle">
+    <table>
+      <thead><tr><th>Empfänger</th><th>Status</th><th>Grund</th></tr></thead>
+      <tbody id="z-zeilen">
+        <% auftrag.ergebnisse.forEach((e) => { %>
+          <tr>
+            <td><%= e.label ?? '—' %></td>
+            <td><span class="abzeichen abzeichen--<%= e.ok ? 'ok' : 'failed' %>"><%= e.ok ? 'Zugestellt' : 'Fehlgeschlagen' %></span></td>
+            <td><%= e.grund ?? '' %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<a class="knopf knopf--leise" href="/dm">Neue Nachricht</a>

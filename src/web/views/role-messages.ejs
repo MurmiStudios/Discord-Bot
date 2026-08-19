@@ -1,0 +1,96 @@
+<h1>Rollen-Nachrichten</h1>
+<p class="unterzeile">
+  Nachrichten, die einem Mitglied als DM zugehen — automatisch beim Erhalt der Rolle
+  oder auf Knopfdruck an alle Trägerinnen und Träger.
+</p>
+
+<div class="karte">
+  <h2>Neue Rollen-Nachricht</h2>
+  <form method="post" action="/rollen-nachrichten">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <label>
+      <span class="feldname">Rolle</span>
+      <select name="roleId" required>
+        <option value="">— bitte wählen —</option>
+        <% rollen.forEach((r) => { %>
+          <option value="<%= r.id %>"><%= r.name %> (<%= r.memberCount %>)</option>
+        <% }) %>
+      </select>
+    </label>
+
+    <label>
+      <span class="feldname">Titel (optional — erzeugt ein Embed)</span>
+      <input type="text" name="title" maxlength="256">
+    </label>
+
+    <label>
+      <span class="feldname">Text</span>
+      <textarea name="body" maxlength="3000" required placeholder="Hallo {user}, du hast jetzt die Rolle {role}."></textarea>
+    </label>
+
+    <label>
+      <span class="feldname">Bildvorlage (optional)</span>
+      <select name="templateId">
+        <option value="">— ohne Bild —</option>
+        <% vorlagen.forEach((v) => { %>
+          <option value="<%= v.id %>"><%= v.name %> (<%= v.width %>×<%= v.height %>)</option>
+        <% }) %>
+      </select>
+    </label>
+
+    <label class="kontrollkaestchen">
+      <input type="checkbox" name="autoSend">
+      <span>Automatisch senden, sobald jemand diese Rolle erhält</span>
+    </label>
+
+    <label class="kontrollkaestchen">
+      <input type="checkbox" name="enabled" checked>
+      <span>Aktiv</span>
+    </label>
+
+    <button class="knopf" type="submit"><%= t('app.speichern') %></button>
+  </form>
+</div>
+
+<div class="karte">
+  <h2>Bestehende Nachrichten</h2>
+  <% if (nachrichten.length === 0) { %>
+    <p class="leer">Noch keine Rollen-Nachricht angelegt.</p>
+  <% } else { %>
+    <div class="tabellen-huelle">
+      <table>
+        <thead><tr><th>Rolle</th><th>Text</th><th>Bild</th><th>Automatisch</th><th></th></tr></thead>
+        <tbody>
+          <% nachrichten.forEach((n) => { %>
+            <tr>
+              <td><strong><%= n.roleName %></strong><br><small><%= n.empfaengerZahl %> Mitglied(er)</small></td>
+              <td><%= n.title ? n.title + ' — ' : '' %><%= n.body.slice(0, 90) %><%= n.body.length > 90 ? '…' : '' %></td>
+              <td><%= n.vorlageName ?? '—' %></td>
+              <td>
+                <span class="abzeichen abzeichen--<%= n.autoSend && n.enabled ? 'ok' : 'skipped' %>">
+                  <%= n.autoSend ? (n.enabled ? 'Ja' : 'Ja (inaktiv)') : 'Nein' %>
+                </span>
+              </td>
+              <td>
+                <div class="knopfreihe">
+                  <form method="post" action="/rollen-nachrichten/<%= n.id %>/senden"
+                        data-bestaetigen="Jetzt an <%= n.empfaengerZahl %> Mitglied(er) senden?">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button class="knopf" type="submit" <%= n.empfaengerZahl === 0 ? 'disabled' : '' %>>Jetzt senden</button>
+                  </form>
+                  <form method="post" action="/rollen-nachrichten/<%= n.id %>/loeschen" data-bestaetigen="<%= t('app.bestaetigen') %>">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button class="knopf knopf--gefahr" type="submit"><%= t('app.loeschen') %></button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</div>
+
+<%- include('partials/platzhalter') %>

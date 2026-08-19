@@ -1,0 +1,34 @@
+<header class="kopf">
+  <div class="kopf-links">
+    <span class="marke">🤖 <%= t('app.titel') %></span>
+    <span class="server <%= botVerbunden ? '' : 'server--offline' %>" title="Verwalteter Server">
+      <%= guildName %>
+    </span>
+  </div>
+  <nav class="navi">
+    <% const punkte = [
+      ['/', t('nav.dashboard')],
+      ['/dm', t('nav.dm')],
+      ['/kanaele', t('nav.channels')],
+      ['/rollen-nachrichten', t('nav.roleMessages')],
+      ['/rollenregeln', t('nav.roleRules')],
+      ['/vorlagen', t('nav.templates')],
+      ['/willkommen', t('nav.welcome')],
+      ['/protokoll', t('nav.logs')],
+    ]; %>
+    <% punkte.forEach(([pfad, text]) => { %>
+      <a href="<%= pfad %>" class="<%= aktuellerPfad === pfad || (pfad !== '/' && aktuellerPfad.startsWith(pfad)) ? 'aktiv' : '' %>"><%= text %></a>
+    <% }) %>
+  </nav>
+  <div class="kopf-rechts">
+    <img class="avatar-klein" src="<%= user.avatarUrl %>" alt="" width="28" height="28">
+    <span class="nutzer">
+      <%= user.displayName %>
+      <% if (panelRolle) { %><small><%= panelRolle %></small><% } %>
+    </span>
+    <form method="post" action="/logout">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="knopf knopf--leise" type="submit"><%= t('app.abmelden') %></button>
+    </form>
+  </div>
+</header>

@@ -1,0 +1,53 @@
+<h1>Protokoll</h1>
+<p class="unterzeile"><%= gesamt %> Einträge insgesamt.</p>
+
+<div class="karte">
+  <form method="get" action="/protokoll" class="zeile">
+    <label>
+      <span class="feldname">Nach Art filtern</span>
+      <select name="art" onchange="this.form.submit()">
+        <option value="">Alle</option>
+        <% arten.forEach((a) => { %>
+          <option value="<%= a %>" <%= art === a ? 'selected' : '' %>><%= t('logKind.' + a, a) %></option>
+        <% }) %>
+      </select>
+    </label>
+  </form>
+</div>
+
+<div class="karte">
+  <% if (eintraege.length === 0) { %>
+    <p class="leer"><%= t('app.keineDaten') %></p>
+  <% } else { %>
+    <div class="tabellen-huelle">
+      <table>
+        <thead>
+          <tr><th>Zeit</th><th>Art</th><th>Status</th><th>Ziel</th><th>Details</th></tr>
+        </thead>
+        <tbody>
+          <% eintraege.forEach((e) => { %>
+            <tr>
+              <td><%= new Date(e.ts).toLocaleString('de-CH') %></td>
+              <td><%= t('logKind.' + e.kind, e.kind) %></td>
+              <td><span class="abzeichen abzeichen--<%= e.status %>"><%= statusText(e.status, e.kind) %></span></td>
+              <td><%= e.targetUserId ?? e.targetChannelId ?? '—' %></td>
+              <td><%= e.detail %><% if (e.errorCode) { %> <small>(Code <%= e.errorCode %>)</small><% } %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if (seiten > 1) { %>
+      <div class="knopfreihe" style="margin-top:1rem">
+        <% if (seite > 1) { %>
+          <a class="knopf knopf--leise" href="/protokoll?seite=<%= seite - 1 %><%= art ? '&art=' + art : '' %>">Zurück</a>
+        <% } %>
+        <span>Seite <%= seite %> von <%= seiten %></span>
+        <% if (seite < seiten) { %>
+          <a class="knopf knopf--leise" href="/protokoll?seite=<%= seite + 1 %><%= art ? '&art=' + art : '' %>">Weiter</a>
+        <% } %>
+      </div>
+    <% } %>
+  <% } %>
+</div>
