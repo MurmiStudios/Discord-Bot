@@ -4,18 +4,21 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="<%= csrfToken %>">
+  <meta name="color-scheme" content="dark">
   <title><%= typeof titel !== 'undefined' ? titel + ' · ' : '' %><%= t('app.titel') %></title>
   <link rel="stylesheet" href="/css/panel.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🤖</text></svg>">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
 </head>
-<body>
+<body class="<%= user ? 'mit-leiste' : 'ohne-leiste' %>">
   <% if (user) { %>
     <%- include('partials/nav') %>
   <% } %>
-  <main class="inhalt">
+
+  <main class="inhalt" id="inhalt">
     <%- include('partials/flash') %>
     <%- koerper %>
   </main>
+
   <script type="module" src="/js/common.js"></script>
   <% if (typeof seitenSkript !== 'undefined' && seitenSkript) { %>
     <script type="module" src="/js/<%= seitenSkript %>"></script>

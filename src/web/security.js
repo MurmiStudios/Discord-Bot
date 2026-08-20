@@ -33,21 +33,34 @@ export function baueSession(db, config) {
   };
 }
 
-export function baueHelmet() {
+/** Discords Profilbilder liegen auf diesem CDN. */
+const DISCORD_CDN = 'https://cdn.discordapp.com';
+
+export function baueHelmet(config) {
   return helmet({
     contentSecurityPolicy: {
+      // Die Richtlinie wird bewusst VOLLSTÄNDIG ausgeschrieben. Mit Helmets
+      // Standardwerten käme sonst still `upgrade-insecure-requests` dazu — und
+      // das weist den Browser an, jede Unterressource von http:// auf https://
+      // umzuschreiben. Beim Betrieb ohne TLS scheitern dadurch Stylesheet und
+      // Skripte lautlos, und das Panel erscheint als nacktes HTML.
+      useDefaults: false,
       directives: {
         defaultSrc: ["'self'"],
         // Keine Inline-Skripte — sämtliches Panel-JavaScript liegt in Dateien.
         scriptSrc: ["'self'"],
         styleSrc: ["'self'"],
-        // blob: wird für die Live-Vorschau gebraucht, data: für kleine Symbole.
-        imgSrc: ["'self'", 'blob:', 'data:'],
+        // blob: für die Live-Vorschau, data: für kleine Symbole,
+        // das CDN für die Profilbilder in der Seitenleiste.
+        imgSrc: ["'self'", 'blob:', 'data:', DISCORD_CDN],
+        fontSrc: ["'self'", 'data:'],
         connectSrc: ["'self'"],
         formAction: ["'self'", 'https://discord.com'],
         frameAncestors: ["'none'"],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
+        // Nur sinnvoll, wenn tatsächlich über HTTPS ausgeliefert wird.
+        ...(config.unverschluesselt ? {} : { upgradeInsecureRequests: [] }),
       },
     },
     // Der Rücksprung von Discord würde sonst als Cross-Origin blockiert.

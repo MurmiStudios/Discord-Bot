@@ -48,7 +48,7 @@ export function createServer({ db, repos, config, log, getKontext }) {
   app.disable('x-powered-by');
 
   app.use(limits.global);
-  app.use(baueHelmet());
+  app.use(baueHelmet(config));
   app.use(express.static(path.join(hier, 'public'), { maxAge: '1h' }));
   app.use(express.urlencoded({ extended: false, limit: '256kb' }));
   app.use(express.json({ limit: '256kb' }));

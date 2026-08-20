@@ -1,13 +1,13 @@
 <h1><%= vorlage.id ? 'Vorlage bearbeiten' : 'Neue Bildvorlage' %></h1>
 <p class="unterzeile">Änderungen erscheinen sofort in der Vorschau rechts. Gespeichert wird erst mit dem Knopf unten.</p>
 
-<form method="post" action="/vorlagen" enctype="multipart/form-data" id="vorlagen-formular">
+<form method="post" action="/vorlagen" enctype="multipart/form-data" id="vorlagen-formular" data-laden="Wird gespeichert …">
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <% if (vorlage.id) { %><input type="hidden" name="id" value="<%= vorlage.id %>"><% } %>
   <input type="hidden" name="config" id="config-feld">
 
   <div class="editor">
-    <div>
+    <div class="editor-felder">
       <fieldset class="gruppe">
         <legend>Allgemein</legend>
         <label>
@@ -132,10 +132,10 @@
       <% }) %>
     </div>
 
-    <div>
+    <div class="editor-vorschau">
       <div class="vorschau-huelle">
         <div class="karte">
-          <h2 style="margin-top:0">Vorschau</h2>
+          <h2 class="ohne-abstand-oben">Vorschau</h2>
           <img class="vorschau-bild" id="vorschau" alt="Vorschau der Bildvorlage">
           <p class="hilfe" id="vorschau-status">
             Ziehe das Profilbild oder die Texte direkt im Bild, um sie zu positionieren.

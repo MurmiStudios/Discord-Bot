@@ -1,34 +1,82 @@
-<header class="kopf">
-  <div class="kopf-links">
-    <span class="marke">🤖 <%= t('app.titel') %></span>
-    <span class="server <%= botVerbunden ? '' : 'server--offline' %>" title="Verwalteter Server">
+<%
+/**
+ * Seitenleiste. Die Symbole stehen als Inline-SVG direkt im Markup: keine
+ * zusätzliche Anfrage, keine Symbolschrift, und die CSP bleibt unberührt
+ * (sie verbietet Inline-Skripte und Inline-Styles, nicht Inline-SVG).
+ */
+const symbol = {
+  uebersicht: '<path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/>',
+  dm: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+  kanal: '<path d="M4 9h16M4 15h16M10 3L8 21M16 3l-2 18"/>',
+  rollenNachricht: '<path d="M4 4h16v12H5.2L4 17.2z"/><path d="M8 9h8M8 12h5"/>',
+  regeln: '<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/>',
+  vorlagen: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="9.5" r="2"/><path d="M21 16l-5-5-6 6"/>',
+  willkommen: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/>',
+  protokoll: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/>',
+};
+
+const punkte = [
+  ['/', t('nav.dashboard'), symbol.uebersicht],
+  ['/dm', t('nav.dm'), symbol.dm],
+  ['/kanaele', t('nav.channels'), symbol.kanal],
+  ['/rollen-nachrichten', t('nav.roleMessages'), symbol.rollenNachricht],
+  ['/rollenregeln', t('nav.roleRules'), symbol.regeln],
+  ['/vorlagen', t('nav.templates'), symbol.vorlagen],
+  ['/willkommen', t('nav.welcome'), symbol.willkommen],
+  ['/protokoll', t('nav.logs'), symbol.protokoll],
+];
+
+const istAktiv = (pfad) =>
+  pfad === '/' ? aktuellerPfad === '/' : aktuellerPfad.startsWith(pfad);
+%>
+
+<header class="mobilleiste">
+  <button class="leiste-schalter" type="button" data-leiste-schalter aria-expanded="false" aria-controls="seitenleiste">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    <span class="nur-vorlesen">Navigation ein- und ausblenden</span>
+  </button>
+  <span class="marke-klein"><%= t('app.titel') %></span>
+</header>
+
+<div class="leiste-schleier" data-leiste-schliessen hidden></div>
+
+<aside class="seitenleiste" id="seitenleiste">
+  <div class="leiste-kopf">
+    <span class="marke">
+      <svg class="marke-zeichen" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="2" y="5" width="20" height="14" rx="5"/>
+        <circle cx="9" cy="12" r="1.6" fill="currentColor" stroke="none"/>
+        <circle cx="15" cy="12" r="1.6" fill="currentColor" stroke="none"/>
+      </svg>
+      <%= t('app.titel') %>
+    </span>
+    <span class="server <%= botVerbunden ? '' : 'server--offline' %>">
+      <span class="punkt" aria-hidden="true"></span>
       <%= guildName %>
     </span>
   </div>
-  <nav class="navi">
-    <% const punkte = [
-      ['/', t('nav.dashboard')],
-      ['/dm', t('nav.dm')],
-      ['/kanaele', t('nav.channels')],
-      ['/rollen-nachrichten', t('nav.roleMessages')],
-      ['/rollenregeln', t('nav.roleRules')],
-      ['/vorlagen', t('nav.templates')],
-      ['/willkommen', t('nav.welcome')],
-      ['/protokoll', t('nav.logs')],
-    ]; %>
-    <% punkte.forEach(([pfad, text]) => { %>
-      <a href="<%= pfad %>" class="<%= aktuellerPfad === pfad || (pfad !== '/' && aktuellerPfad.startsWith(pfad)) ? 'aktiv' : '' %>"><%= text %></a>
+
+  <nav class="navi" aria-label="Hauptnavigation">
+    <% punkte.forEach(([pfad, text, pfadSymbol]) => { %>
+      <a href="<%= pfad %>" class="<%= istAktiv(pfad) ? 'aktiv' : '' %>"
+         <%= istAktiv(pfad) ? 'aria-current="page"' : '' %>>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><%- pfadSymbol %></svg>
+        <span><%= text %></span>
+      </a>
     <% }) %>
   </nav>
-  <div class="kopf-rechts">
-    <img class="avatar-klein" src="<%= user.avatarUrl %>" alt="" width="28" height="28">
-    <span class="nutzer">
-      <%= user.displayName %>
-      <% if (panelRolle) { %><small><%= panelRolle %></small><% } %>
-    </span>
+
+  <div class="leiste-fuss">
+    <div class="nutzer">
+      <img class="avatar-klein" src="<%= user.avatarUrl %>" alt="" width="32" height="32">
+      <span class="nutzer-text">
+        <strong><%= user.displayName %></strong>
+        <% if (panelRolle) { %><small><%= panelRolle %></small><% } %>
+      </span>
+    </div>
     <form method="post" action="/logout">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <button class="knopf knopf--leise" type="submit"><%= t('app.abmelden') %></button>
+      <button class="knopf knopf--leise knopf--breit" type="submit"><%= t('app.abmelden') %></button>
     </form>
   </div>
-</header>
+</aside>

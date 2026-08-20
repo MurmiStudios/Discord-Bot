@@ -10,7 +10,9 @@ export function locals(getKontext) {
     const kontext = getKontext();
 
     res.locals.user = req.session?.user ?? null;
-    res.locals.panelRolle = req.panelRolle ?? '';
+    // panelRolle setzt der Zugriffsschutz selbst — er läuft erst nach dieser
+    // Middleware. Hier nur ein Standardwert, damit die Ansicht nie stolpert.
+    res.locals.panelRolle = '';
     res.locals.guildName = kontext.guild?.name ?? 'Nicht verbunden';
     res.locals.botVerbunden = Boolean(kontext.guild);
     res.locals.aktuellerPfad = req.path;

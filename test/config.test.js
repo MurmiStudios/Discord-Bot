@@ -100,7 +100,9 @@ test('fehlende Pflichtwerte werden auf Deutsch gemeldet', () => {
       cwd: WURZEL,
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],
-      env: { PATH: process.env.PATH },
+      // Wie oben: eine echte .env im Projektverzeichnis darf den Test nicht
+      // verfälschen — sonst wären die Pflichtwerte plötzlich gesetzt.
+      env: { PATH: process.env.PATH, DOTENV_CONFIG_PATH: '/dev/null' },
     });
     assert.fail('ohne Pflichtwerte darf der Start nicht gelingen');
   } catch (err) {

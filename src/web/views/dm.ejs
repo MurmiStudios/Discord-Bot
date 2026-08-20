@@ -1,7 +1,7 @@
 <h1>Direktnachricht</h1>
 <p class="unterzeile">Wähle Empfänger und sende ihnen eine DM — auf Wunsch mit generiertem Bild.</p>
 
-<form method="post" action="/dm" class="karte" id="dm-formular">
+<form method="post" action="/dm" class="karte" id="dm-formular" data-laden="Wird gesendet …">
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
   <label>
@@ -10,6 +10,13 @@
   </label>
 
   <div class="auswahl-liste" id="mitglied-liste">
+    <% if (mitglieder.length === 0) { %>
+      <p class="liste-leer">
+        <%= botVerbunden
+          ? 'Keine Mitglieder gefunden.'
+          : 'Der Bot ist nicht mit dem Server verbunden — es lassen sich keine Mitglieder laden.' %>
+      </p>
+    <% } %>
     <% mitglieder.slice(0, 100).forEach((m) => { %>
       <div class="auswahl-zeile" data-id="<%= m.id %>" data-name="<%= m.displayName %>">
         <img src="<%= m.avatarUrl %>" alt="" width="24" height="24">
@@ -19,7 +26,7 @@
     <% }) %>
   </div>
 
-  <div class="zeile" style="margin-top:0.75rem">
+  <div class="zeile abstand-oben-klein">
     <label>
       <span class="feldname">Oder alle Mitglieder einer Rolle übernehmen</span>
       <select id="rollen-auswahl">
@@ -32,12 +39,12 @@
     <button class="knopf knopf--leise" type="button" id="rolle-uebernehmen">Übernehmen</button>
   </div>
 
-  <p class="feldname" style="margin-top:1rem">
+  <p class="feldname abstand-oben">
     Gewählte Empfänger (<span id="anzahl">0</span> / <%= maxEmpfaenger %>)
   </p>
   <div class="gewaehlte" id="gewaehlte"></div>
 
-  <label style="margin-top:1rem">
+  <label class="abstand-oben">
     <span class="feldname">Titel (optional — erzeugt ein Embed)</span>
     <input type="text" name="title" maxlength="256">
   </label>

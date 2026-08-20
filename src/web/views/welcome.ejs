@@ -45,7 +45,7 @@
     Schickt dir die gespeicherte Willkommensnachricht als DM — inklusive
     generiertem Bild mit deinem Profilbild und Namen.
   </p>
-  <form method="post" action="/willkommen/test">
+  <form method="post" action="/willkommen/test" data-laden="Wird gesendet …">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <button class="knopf knopf--leise" type="submit">Test-DM an mich senden</button>
   </form>

@@ -57,7 +57,13 @@
 <div class="karte">
   <h2>Bestehende Regeln</h2>
   <% if (regeln.length === 0) { %>
-    <p class="leer">Noch keine Regel angelegt.</p>
+    <div class="leer">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></svg>
+      <p>
+        <strong>Noch keine Regel angelegt</strong>
+        Lege oben fest, welche Rolle beim Vergeben einer anderen automatisch entzogen wird.
+      </p>
+    </div>
   <% } else { %>
     <div class="tabellen-huelle">
       <table>

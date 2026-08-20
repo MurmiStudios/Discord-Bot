@@ -97,7 +97,10 @@ export function requirePanelAccess(getKontext) {
       });
     }
 
+    // Direkt in res.locals, nicht in req: die locals-Middleware läuft VOR
+    // diesem Guard und käme sonst zu früh — die Rolle bliebe in der Ansicht leer.
     req.panelRolle = rolle;
+    res.locals.panelRolle = rolle;
     return next();
   };
 }
