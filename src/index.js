@@ -35,6 +35,14 @@ const { app, store } = createServer({ db, repos, config, log: logger, getKontext
 
 const server = app.listen(config.PORT, () => {
   logger.info(`Panel erreichbar unter ${config.BASE_URL}`);
+  if (config.unverschluesselt) {
+    logger.warn(
+      'Das Panel läuft OHNE HTTPS. Anmeldedaten und Sitzungs-Cookie gehen ' +
+        'unverschlüsselt über die Leitung — in einem fremden Netz kann das ' +
+        'mitgelesen werden. Für den Dauerbetrieb siehe im README den Abschnitt ' +
+        '„Später auf HTTPS umstellen“.',
+    );
+  }
 });
 
 registriereEreignisse(client, { repos, config, log: logger });

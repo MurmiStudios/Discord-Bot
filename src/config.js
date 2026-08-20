@@ -7,6 +7,7 @@
  * nirgends sonst im Code weitergereicht oder protokolliert werden.
  */
 import 'dotenv/config';
+import fs from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';
 
@@ -53,6 +54,10 @@ const schema = z.object({
   SESSION_SECRET: pflicht('fehlt — erzeugen mit: openssl rand -hex 32'),
   TRUST_PROXY: boolish('false'),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  // Erlaubt den Produktionsbetrieb ohne HTTPS (z. B. Zugriff direkt über
+  // http://SERVER-IP:3000). Bewusst ein Opt-in: ohne diesen Schalter bricht
+  // der Start ab, damit niemand versehentlich unverschlüsselt betreibt.
+  ALLOW_INSECURE_HTTP: boolish('false'),
 
   DATA_DIR: z.string().default('./data'),
   MAX_UPLOAD_MB: z.coerce.number().positive().max(64).default(8),
@@ -65,11 +70,16 @@ const schema = z.object({
 });
 
 function fail(zeilen) {
-  console.error('\n  Der Start wurde abgebrochen — die Konfiguration ist unvollständig:\n');
+  console.error('\n  Der Start wurde abgebrochen — die Konfiguration stimmt nicht:\n');
   for (const z of zeilen) console.error(`   • ${z}`);
+
+  // Der Hinweis unterscheidet sich: fehlt die Datei ganz, oder stimmen nur
+  // einzelne Werte darin nicht?
   console.error(
-    '\n  Lege eine Datei ".env" im Projektverzeichnis an (Vorlage: ".env.example")' +
-      '\n  und trage die fehlenden Werte ein.\n',
+    fs.existsSync('.env')
+      ? '\n  Öffne die Datei ".env" und korrigiere die oben genannten Werte.\n'
+      : '\n  Es gibt noch keine Datei ".env". Lege sie an — als Vorlage dient' +
+          '\n  ".env.example":   cp .env.example .env\n',
   );
   process.exit(1);
 }
@@ -95,10 +105,14 @@ if (env.NODE_ENV === 'production') {
         'Erzeugen mit: openssl rand -hex 32',
     );
   }
-  if (env.BASE_URL.startsWith('http://')) {
+  if (env.BASE_URL.startsWith('http://') && !env.ALLOW_INSECURE_HTTP) {
     nachtraeglich.push(
-      'BASE_URL muss in der Produktion mit https:// beginnen, sonst funktionieren ' +
-        'die Secure-Cookies nicht und die Anmeldung schlägt fehl.',
+      'BASE_URL beginnt mit http://, das ist in der Produktion nur mit ausdrücklicher ' +
+        'Zustimmung erlaubt.\n' +
+        '     Entweder auf https:// umstellen (empfohlen), oder — wenn du das Panel ' +
+        'bewusst\n' +
+        '     unverschlüsselt über die Server-IP erreichen willst — in der .env setzen:\n' +
+        '     ALLOW_INSECURE_HTTP=true',
     );
   }
 }
@@ -113,6 +127,10 @@ export const config = Object.freeze({
   uploadsDir: path.join(dataDir, 'uploads'),
   generatedDir: path.join(dataDir, 'generated'),
   isProduction: env.NODE_ENV === 'production',
+  // Wahr, wenn ohne HTTPS betrieben wird. Steuert das Secure-Flag am
+  // Sitzungs-Cookie: bliebe es gesetzt, sendete der Browser das Cookie über
+  // HTTP nie mit und die Anmeldung schlüge stillschweigend fehl.
+  unverschluesselt: env.BASE_URL.startsWith('http://') && env.ALLOW_INSECURE_HTTP,
   maxUploadBytes: env.MAX_UPLOAD_MB * 1024 * 1024,
 });
 

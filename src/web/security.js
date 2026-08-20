@@ -23,7 +23,10 @@ export function baueSession(db, config) {
         // 'lax' ist Pflicht: bei 'strict' schickt der Browser das Cookie beim
         // Rücksprung von Discord nicht mit und die Anmeldung schlägt fehl.
         sameSite: 'lax',
-        secure: config.isProduction,
+        // Nur setzen, wenn wirklich über HTTPS ausgeliefert wird. Über HTTP
+        // würde der Browser ein Secure-Cookie nicht mitsenden — die Anmeldung
+        // schlüge fehl, ohne dass eine Fehlermeldung erschiene.
+        secure: config.isProduction && !config.unverschluesselt,
         maxAge: 12 * 60 * 60 * 1000,
       },
     }),
