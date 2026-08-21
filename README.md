@@ -413,6 +413,16 @@ chown -R discordbot:discordbot /opt/discord-bot
 
 Übergibt das gesamte Verzeichnis an den Bot-Benutzer aus Schritt 4.
 
+```bash
+git config --global --add safe.directory /opt/discord-bot
+```
+
+Einmalig nötig: Das Verzeichnis gehört jetzt `discordbot`, du arbeitest aber als
+`root`. Ohne diese Zeile verweigert Git später jedes `git pull` mit
+*„detected dubious ownership"*. Die Sperre schützt davor, dass fremder Code aus
+einem Repository eines anderen Nutzers als `root` ausgeführt wird — hier hast du
+beide Konten selbst angelegt, deshalb ist die Ausnahme in Ordnung.
+
 ---
 
 ## Schritt 14 — Der erste Testlauf
@@ -691,6 +701,15 @@ systemctl restart discord-bot
 Holt den neuen Code, aktualisiert die Bibliotheken, richtet die Besitzrechte
 wieder her und startet neu.
 
+> Meldet `git pull` *„detected dubious ownership"*, fehlt der einmalige Schritt
+> aus Schritt 13:
+> ```bash
+> git config --global --add safe.directory /opt/discord-bot
+> ```
+> Danach die Befehle oben erneut ausführen. **Achte darauf, dass `git pull` und
+> `npm install` wirklich durchgelaufen sind** — bricht einer ab, startet der
+> Dienst sonst wieder mit dem alten Code.
+
 ### Sicherung anlegen
 
 Alles, was du im Panel eingestellt hast — Vorlagen, Regeln, Nachrichten,
@@ -731,6 +750,7 @@ scp root@DEINE-SERVER-IP:~/discord-bot-sicherung-*.tar.gz .
 | Rollenregel greift nicht | Die zu entfernende Rolle steht über der Bot-Rolle. Bot-Rolle nach oben ziehen (Schritt 11). Das Protokoll im Panel nennt den genauen Grund. |
 | DM kommt nicht an | Der Empfänger hat DMs von Servermitgliedern deaktiviert. Das lässt sich vorher **nicht** prüfen — Discord bietet keine Möglichkeit dazu. Das Panel zeigt es nach dem Versuch im Protokoll, und der restliche Versand läuft normal weiter. |
 | Texte im Bild sind lauter Kästchen | Die Schriften unter `assets/fonts/` fehlen. `git checkout assets/fonts` im Projektverzeichnis holt sie zurück. |
+| `detected dubious ownership in repository` | Das Verzeichnis gehört `discordbot`, du arbeitest als `root`. Einmalig `git config --global --add safe.directory /opt/discord-bot` ausführen, dann das Update wiederholen. |
 | Dienst startet immer wieder neu | `journalctl -u discord-bot -n 50` zeigt den Grund. Meist ein Fehler in der `.env`. |
 
 ---
