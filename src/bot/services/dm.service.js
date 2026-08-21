@@ -41,7 +41,7 @@ export function mapDmError(err) {
  * über attachment:// referenziert — sonst hinge es lose unter dem Embed statt
  * darin.
  */
-export function baueNachricht({ content = '', title = '', bild = null, farbe = 0x5865f2 }) {
+export function baueNachricht({ content = '', title = '', bild = null, farbe = 0x5865f2, components = [] }) {
   const payload = {};
   const dateien = [];
 
@@ -61,6 +61,7 @@ export function baueNachricht({ content = '', title = '', bild = null, farbe = 0
   }
 
   if (dateien.length) payload.files = dateien;
+  if (components.length) payload.components = components;
   return payload;
 }
 
@@ -72,7 +73,7 @@ export async function sendDM(client, userId, nachricht) {
   try {
     const user = await client.users.fetch(userId);
     const payload = baueNachricht(nachricht);
-    if (!payload.content && !payload.embeds) {
+    if (!payload.content && !payload.embeds && !payload.components) {
       return { ok: false, grund: 'Die Nachricht ist leer' };
     }
     await user.send(payload);

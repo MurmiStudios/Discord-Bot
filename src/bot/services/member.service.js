@@ -5,6 +5,7 @@
  * Das hält die Suche schnell und erzeugt keine API-Last beim Tippen.
  */
 export function sucheMitglieder(guild, suchbegriff = '', limit = 50) {
+  if (!guild) return [];
   const q = suchbegriff.trim().toLowerCase();
   const treffer = [];
 
@@ -45,12 +46,15 @@ export function avatarUrl(userOrMember) {
 }
 
 export function mitgliedAusCache(guild, userId) {
-  const m = guild.members.cache.get(userId);
+  // guild ist null, solange der Bot nicht verbunden ist — das Panel bleibt
+  // dann trotzdem bedienbar und darf hier nicht abstürzen.
+  const m = guild?.members.cache.get(userId);
   return m ? zuEintrag(m) : null;
 }
 
 /** Alle Mitglieder mit einer bestimmten Rolle — für den gezielten Massenversand. */
 export function mitgliederMitRolle(guild, roleId) {
+  if (!guild) return [];
   return [...guild.members.cache.values()]
     .filter((m) => !m.user.bot && m.roles.cache.has(roleId))
     .map(zuEintrag);

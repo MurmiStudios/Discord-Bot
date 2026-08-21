@@ -3,12 +3,14 @@ import { z } from 'zod';
 import { validate } from '../middleware/validate.js';
 import { flashUndZurueck } from '../middleware/locals.js';
 import { listeKanaele, sendToChannel } from '../../bot/services/channel.service.js';
+import { komponentenFuerSet } from '../../bot/services/buttons.service.js';
 import { limits } from '../security.js';
 
 const eingabe = z.object({
   channelId: z.string().min(1, 'Bitte einen Kanal auswählen'),
   title: z.string().max(256).default(''),
   content: z.string().max(4000).default(''),
+  buttonSetId: z.string().optional().transform((v) => (v ? Number(v) : null)),
 });
 
 export function channelRoutes({ repos, config, getKontext }) {
@@ -19,6 +21,7 @@ export function channelRoutes({ repos, config, getKontext }) {
     res.render('channels', {
       titel: 'Kanal-Nachricht',
       kanaele: guild ? listeKanaele(guild) : [],
+      leisten: repos.buttonSets.alleSets(config.GUILD_ID),
     });
   });
 
@@ -26,12 +29,16 @@ export function channelRoutes({ repos, config, getKontext }) {
     const { guild } = getKontext();
     if (!guild) return flashUndZurueck(req, res, 'fehler', 'Der Bot ist nicht mit dem Server verbunden.', '/kanaele');
 
-    const { channelId, title, content } = req.geprueft;
-    if (!title && !content.trim()) {
+    const { channelId, title, content, buttonSetId } = req.geprueft;
+    if (!title && !content.trim() && !buttonSetId) {
       return flashUndZurueck(req, res, 'fehler', 'Bitte gib einen Titel oder einen Text ein.', '/kanaele');
     }
 
-    const ergebnis = await sendToChannel(guild, channelId, { content, title });
+    const ergebnis = await sendToChannel(guild, channelId, {
+      content,
+      title,
+      components: komponentenFuerSet(repos, config.GUILD_ID, buttonSetId),
+    });
 
     repos.log.add(config.GUILD_ID, {
       kind: 'channel',

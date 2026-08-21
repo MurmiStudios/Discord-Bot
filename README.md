@@ -10,6 +10,7 @@ Anmeldung am Panel erfolgt mit deinem Discord-Konto.
 - **Rollen-Nachrichten** als DM — automatisch beim Erhalt der Rolle oder auf Knopfdruck
 - **Willkommensnachrichten** als DM, sobald jemand dem Server beitritt
 - **Dynamische Bilder** mit Profilbild und Name des Empfängers, im Panel gestaltbar mit Live-Vorschau
+- **Aktionsleisten** — Buttons unter jeder Nachricht, die beim Klick mehrere Dinge auslösen
 - **Rollenregeln** — wer Rolle B bekommt, verliert automatisch Rolle A
 - **Protokoll** über jeden Versand, mit verständlichem Grund wenn etwas schiefging
 
@@ -794,6 +795,37 @@ Nutzbar in allen Textfeldern — auch in den Textfeldern der Bildvorlagen.
 | `{role}` | Name der Rolle (bei Rollen-Nachrichten) |
 | `{count}` | Mitgliederzahl |
 
+## Aktionsleisten
+
+Eine Aktionsleiste ist eine Reihe von Buttons, die sich an **jede** Nachricht
+hängen lässt — Direktnachricht, Kanal-Nachricht, Rollen- und
+Willkommensnachricht. Du legst sie einmal unter *Aktionsleisten* an und wählst
+sie beim Verfassen im Auswahlfeld aus.
+
+Ein Button kann **mehrere Aktionen nacheinander** ausführen:
+
+| Aktion | Wirkung |
+|---|---|
+| DM an den Klickenden | Schickt dem, der geklickt hat, eine DM — auf Wunsch mit Bildvorlage |
+| DM an eine feste Person | Benachrichtigt ein hinterlegtes Mitglied, z. B. dich selbst |
+| Rolle vergeben / entfernen / umschalten | Ändert eine Rolle beim Klickenden. *Umschalten* macht Selbstbedienungs-Rollen möglich |
+
+Je Button einstellbar: welche Rollen klicken dürfen (nichts gewählt = alle),
+ob nur einmal je Mitglied, und ein Bestätigungstext, den nur der Klickende sieht.
+
+**Drei Dinge, die man wissen sollte:**
+
+- Discord erlaubt **fünf Buttons je Reihe und fünf Reihen** — also höchstens 25
+  je Nachricht. Das Panel bricht automatisch um.
+- Buttons leben in der bereits zugestellten Nachricht weiter. Änderst du eine
+  Leiste, wirkt das erst bei **neu versendeten** Nachrichten; Discord kann alte
+  Nachrichten nicht nachträglich anpassen. Löschst du eine Leiste, bleiben die
+  alten Buttons sichtbar, tun aber nichts mehr.
+- Ein Button, der eine Rolle vergibt, kann von **jedem** geklickt werden, der
+  die Nachricht sieht. Willst du das einschränken, wähle Rollen aus oder setze
+  „nur einmal je Mitglied“. Rollen oberhalb der Bot-Rolle kann der Bot ohnehin
+  nicht vergeben — solche Klicks scheitern mit einem Hinweis an den Klickenden.
+
 ## Wie die Rollenregeln arbeiten
 
 Eine Regel bedeutet: *Wenn ein Mitglied Rolle B erhält, entferne ihm Rolle A.*
@@ -842,7 +874,7 @@ alle Mitglieder (dafür braucht es den privilegierten Intent aus Schritt 8).
 ## Für Entwickler
 
 ```bash
-npm test                # 93 Tests, ohne Discord-Verbindung
+npm test                # 118 Tests, ohne Discord-Verbindung
 npm run render:sample   # Beispielbilder nach data/generated/
 npm run dev             # Start mit automatischem Neustart bei Änderungen
 ```

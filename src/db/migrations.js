@@ -92,6 +92,57 @@ export const migrations = [
       CREATE INDEX idx_sessions_expires ON sessions (expires);
     `,
   },
+  {
+    id: 2,
+    name: 'aktionsleisten',
+    sql: `
+      -- Eine Aktionsleiste bündelt Buttons, die sich an beliebige Nachrichten
+      -- hängen lassen. Discord erlaubt 5 Buttons je Reihe und 5 Reihen, also
+      -- höchstens 25 Buttons je Nachricht.
+      CREATE TABLE button_sets (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        guild_id   TEXT    NOT NULL,
+        name       TEXT    NOT NULL,
+        note       TEXT,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        UNIQUE (guild_id, name)
+      );
+
+      CREATE TABLE buttons (
+        id               INTEGER PRIMARY KEY AUTOINCREMENT,
+        set_id           INTEGER NOT NULL REFERENCES button_sets(id) ON DELETE CASCADE,
+        position         INTEGER NOT NULL DEFAULT 0,
+        label            TEXT    NOT NULL,
+        style            TEXT    NOT NULL DEFAULT 'primary'
+                           CHECK (style IN ('primary','secondary','success','danger')),
+        emoji            TEXT,
+        -- Geordnete Liste von Aktionen. Ein Button kann mehrere ausführen.
+        actions          TEXT    NOT NULL DEFAULT '[]',
+        -- Leere Liste bedeutet: alle dürfen klicken.
+        allowed_role_ids TEXT    NOT NULL DEFAULT '[]',
+        once_per_user    INTEGER NOT NULL DEFAULT 0,
+        reply_text       TEXT    NOT NULL DEFAULT '',
+        enabled          INTEGER NOT NULL DEFAULT 1,
+        created_at       INTEGER NOT NULL,
+        updated_at       INTEGER NOT NULL
+      );
+      CREATE INDEX idx_buttons_set ON buttons (set_id, position);
+
+      -- Für "nur einmal je Mitglied". Der Primärschlüssel verhindert
+      -- Doppeleinträge auch bei zwei gleichzeitigen Klicks.
+      CREATE TABLE button_uses (
+        button_id INTEGER NOT NULL REFERENCES buttons(id) ON DELETE CASCADE,
+        user_id   TEXT    NOT NULL,
+        used_at   INTEGER NOT NULL,
+        PRIMARY KEY (button_id, user_id)
+      );
+
+      -- Anhängen an bestehende Nachrichtenarten.
+      ALTER TABLE role_messages ADD COLUMN button_set_id INTEGER
+        REFERENCES button_sets(id) ON DELETE SET NULL;
+    `,
+  },
 ];
 
 /** Führt alle noch nicht angewandten Migrationen aus. Gibt die Anzahl zurück. */

@@ -84,6 +84,12 @@ svg {
   border-radius: 4px;
 }
 
+/* Das hidden-Attribut muss stärker sein als eigene display-Regeln —
+   sonst bleibt z. B. ein .knopf mit display:inline-flex trotzdem sichtbar. */
+[hidden] {
+  display: none !important;
+}
+
 /* Nur für Screenreader */
 .nur-vorlesen {
   position: absolute;
@@ -810,6 +816,69 @@ td code {
   color: var(--gelb);
   font-size: 0.8rem;
   margin-top: var(--s1);
+}
+
+/* ── Aktionsleisten ────────────────────────────────────────────── */
+
+.leiste-kopfzeile {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--s4);
+  flex-wrap: wrap;
+  margin-bottom: var(--s4);
+}
+
+/* Nachbildung der Discord-Buttons, damit man die Leiste vorab sieht. */
+.button-vorschau {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+  padding: var(--s3);
+  background: var(--bg-feld);
+  border-radius: var(--radius);
+}
+.dc-knopf {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s2) var(--s4);
+  border-radius: 3px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #fff;
+  background: var(--blurple);
+}
+.dc-knopf--secondary { background: #4e5058; }
+.dc-knopf--success   { background: var(--gruen); }
+.dc-knopf--danger    { background: var(--rot); }
+.dc-knopf--aus       { opacity: 0.45; text-decoration: line-through; }
+
+.aktionsliste {
+  margin: 0;
+  padding-left: 1.2em;
+}
+.aktionsliste li {
+  margin-bottom: 2px;
+}
+
+.aktion-karte {
+  border: 1px solid var(--rand);
+  border-radius: var(--radius);
+  padding: var(--s4);
+  margin-bottom: var(--s3);
+  background: var(--bg-feld);
+}
+.aktion-kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s3);
+  flex-wrap: wrap;
+  margin-bottom: var(--s3);
+}
+.aktion-karte label:last-child {
+  margin-bottom: 0;
 }
 
 /* ── Hilfsklassen (ersetzen verbotene Inline-Styles) ───────────── */

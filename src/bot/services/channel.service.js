@@ -53,7 +53,7 @@ export function listeKanaele(guild) {
  * Sendet in einen Kanal.
  * @returns {Promise<{ok:boolean, code?:number, grund?:string, messageId?:string}>}
  */
-export async function sendToChannel(guild, channelId, { content = '', title = '', farbe = 0x5865f2 }) {
+export async function sendToChannel(guild, channelId, { content = '', title = '', farbe = 0x5865f2, components = [] }) {
   const kanal = guild.channels.cache.get(channelId) ?? null;
   const pruefung = kanalBeschreibbar(guild, kanal);
   if (!pruefung.ok) return { ok: false, grund: pruefung.grund };
@@ -70,7 +70,12 @@ export async function sendToChannel(guild, channelId, { content = '', title = ''
         }
       : { content };
 
-    if (!title && !content.trim()) return { ok: false, grund: 'Die Nachricht ist leer' };
+    if (components.length) payload.components = components;
+
+    // Eine Nachricht, die nur aus Buttons besteht, ist zulässig.
+    if (!title && !content.trim() && components.length === 0) {
+      return { ok: false, grund: 'Die Nachricht ist leer' };
+    }
 
     const msg = await kanal.send(payload);
     return { ok: true, messageId: msg.id };

@@ -1,0 +1,210 @@
+<h1><%= leiste.name %></h1>
+<p class="unterzeile">
+  Hänge diese Leiste beim Verfassen einer Nachricht an. Ein Klick führt die
+  Aktionen des Buttons nacheinander aus.
+</p>
+
+<div class="karte">
+  <h2>Leiste</h2>
+  <form method="post" action="/aktionsleisten/<%= leiste.id %>">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="zeile">
+      <label>
+        <span class="feldname">Name</span>
+        <input type="text" name="name" value="<%= leiste.name %>" maxlength="80" required>
+      </label>
+      <label>
+        <span class="feldname">Notiz</span>
+        <input type="text" name="note" value="<%= leiste.note %>" maxlength="200">
+      </label>
+      <button class="knopf knopf--leise" type="submit"><%= t('app.speichern') %></button>
+    </div>
+  </form>
+</div>
+
+<div class="karte">
+  <h2>Buttons (<%= leiste.buttons.length %> von <%= maxButtons %>)</h2>
+
+  <% if (leiste.buttons.length === 0) { %>
+    <div class="leer">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="2" y="8" width="9" height="8" rx="2"/><rect x="13" y="8" width="9" height="8" rx="2"/>
+      </svg>
+      <p>
+        <strong>Noch kein Button</strong>
+        Lege unten den ersten an.
+      </p>
+    </div>
+  <% } else { %>
+    <div class="button-vorschau abstand-unten">
+      <% leiste.buttons.forEach((b) => { %>
+        <span class="dc-knopf dc-knopf--<%= b.style %> <%= b.enabled ? '' : 'dc-knopf--aus' %>">
+          <%= b.emoji %> <%= b.label %>
+        </span>
+      <% }) %>
+    </div>
+    <p class="hilfe abstand-unten">
+      So sieht die Leiste in Discord aus. Ab dem sechsten Button beginnt Discord
+      eine neue Reihe.
+    </p>
+
+    <div class="tabellen-huelle">
+      <table>
+        <thead>
+          <tr><th>Button</th><th>Aktionen</th><th>Zugriff</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% leiste.buttons.forEach((b) => { %>
+            <tr>
+              <td><strong><%= b.emoji %> <%= b.label %></strong></td>
+              <td>
+                <% if (b.aktionText.length === 0) { %>
+                  <span class="warnung-rolle">⚠ Keine Aktion hinterlegt</span>
+                <% } else { %>
+                  <ol class="aktionsliste">
+                    <% b.aktionText.forEach((a) => { %><li><%= a %></li><% }) %>
+                  </ol>
+                <% } %>
+              </td>
+              <td>
+                <%= b.rollenNamen.length ? b.rollenNamen.join(', ') : 'Alle' %>
+                <% if (b.oncePerUser) { %>
+                  <div class="hilfe">Einmal je Mitglied · <%= b.nutzungen %> benutzt</div>
+                <% } %>
+              </td>
+              <td>
+                <span class="abzeichen abzeichen--<%= b.enabled ? 'ok' : 'skipped' %>">
+                  <%= b.enabled ? 'Aktiv' : 'Aus' %>
+                </span>
+              </td>
+              <td>
+                <div class="knopfreihe">
+                  <button class="knopf knopf--leise" type="button"
+                          data-button-bearbeiten="<%= b.id %>">Bearbeiten</button>
+                  <% if (b.oncePerUser && b.nutzungen > 0) { %>
+                    <form method="post" action="/aktionsleisten/<%= leiste.id %>/buttons/<%= b.id %>/zuruecksetzen"
+                          data-bestaetigen="Sperre für alle <%= b.nutzungen %> Mitglieder aufheben?">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <button class="knopf knopf--leise" type="submit">Sperre lösen</button>
+                    </form>
+                  <% } %>
+                  <form method="post" action="/aktionsleisten/<%= leiste.id %>/buttons/<%= b.id %>/loeschen"
+                        data-bestaetigen="<%= t('app.bestaetigen') %>">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button class="knopf knopf--gefahr" type="submit"><%= t('app.loeschen') %></button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</div>
+
+<div class="karte" id="button-formular-karte">
+  <h2 id="formular-titel">Neuer Button</h2>
+
+  <form method="post" action="/aktionsleisten/<%= leiste.id %>/buttons" id="button-formular">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="actions" id="aktionen-feld" value="[]">
+
+    <div class="zeile">
+      <label>
+        <span class="feldname">Beschriftung</span>
+        <input type="text" name="label" id="f-label" maxlength="80" required placeholder="z. B. Regeln akzeptieren">
+      </label>
+      <label>
+        <span class="feldname">Emoji (optional)</span>
+        <input type="text" name="emoji" id="f-emoji" maxlength="64" placeholder="✅">
+      </label>
+      <label>
+        <span class="feldname">Farbe</span>
+        <select name="style" id="f-style">
+          <option value="primary">Blau</option>
+          <option value="secondary">Grau</option>
+          <option value="success">Grün</option>
+          <option value="danger">Rot</option>
+        </select>
+      </label>
+    </div>
+
+    <fieldset class="gruppe">
+      <legend>Aktionen</legend>
+      <p class="hilfe ohne-abstand-oben">
+        Werden in dieser Reihenfolge ausgeführt. Schlägt eine fehl, laufen die
+        übrigen trotzdem — das Ergebnis sieht der Klickende.
+      </p>
+
+      <div id="aktionsliste"></div>
+
+      <div class="zeile abstand-oben">
+        <label>
+          <span class="feldname">Aktion hinzufügen</span>
+          <select id="neue-aktion">
+            <option value="dm_klicker">DM an den Klickenden</option>
+            <option value="dm_person">DM an eine feste Person</option>
+            <option value="rolle">Rolle geben / entfernen / umschalten</option>
+          </select>
+        </label>
+        <button class="knopf knopf--leise" type="button" id="aktion-hinzufuegen">Hinzufügen</button>
+      </div>
+    </fieldset>
+
+    <fieldset class="gruppe">
+      <legend>Zugriff</legend>
+      <label>
+        <span class="feldname">Nur diese Rollen dürfen klicken (nichts gewählt = alle)</span>
+        <select name="allowedRoleIds" id="f-rollen" multiple size="6">
+          <% rollen.forEach((r) => { %>
+            <option value="<%= r.id %>"><%= r.name %></option>
+          <% }) %>
+        </select>
+      </label>
+      <label class="kontrollkaestchen">
+        <input type="checkbox" name="oncePerUser" id="f-einmal">
+        <span>Nur einmal je Mitglied</span>
+      </label>
+      <label>
+        <span class="feldname">Bestätigungstext (optional, sieht nur der Klickende)</span>
+        <input type="text" name="replyText" id="f-antwort" maxlength="500" placeholder="Danke, alles erledigt!">
+      </label>
+      <label class="kontrollkaestchen">
+        <input type="checkbox" name="enabled" id="f-aktiv" checked>
+        <span>Button aktiv</span>
+      </label>
+    </fieldset>
+
+    <div class="knopfreihe">
+      <button class="knopf" type="submit" id="f-absenden">Button anlegen</button>
+      <button class="knopf knopf--leise" type="button" id="f-abbrechen" hidden>Abbrechen</button>
+    </div>
+  </form>
+</div>
+
+<div class="karte">
+  <h2>Sicherheitshinweis</h2>
+  <p class="hilfe">
+    Ein Button, der eine Rolle vergibt, kann von jedem geklickt werden, der die
+    Nachricht sieht. Willst du das einschränken, wähle oben Rollen aus oder setze
+    „Nur einmal je Mitglied“. Rollen oberhalb der Bot-Rolle kann der Bot ohnehin
+    nicht vergeben — solche Aktionen scheitern zur Laufzeit mit einem Hinweis.
+  </p>
+</div>
+
+<a class="knopf knopf--leise" href="/aktionsleisten"><%= t('app.zurueck') %></a>
+
+<script type="application/json" id="editor-daten">
+  <%- JSON.stringify({
+    buttons: leiste.buttons.map((b) => ({
+      id: b.id, label: b.label, emoji: b.emoji, style: b.style,
+      actions: b.actions, allowedRoleIds: b.allowedRoleIds,
+      oncePerUser: b.oncePerUser, replyText: b.replyText, enabled: b.enabled,
+    })),
+    rollen: rollen.map((r) => ({ id: r.id, name: r.name, verwaltbar: r.verwaltbar })),
+    mitglieder: mitglieder.map((m) => ({ id: m.id, name: m.displayName })),
+    vorlagen: vorlagen.map((v) => ({ id: v.id, name: v.name })),
+    setId: leiste.id,
+  }) %>
+</script>

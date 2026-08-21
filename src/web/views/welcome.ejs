@@ -34,6 +34,18 @@
     <% } %>
   </label>
 
+  <label>
+    <span class="feldname">Aktionsleiste (optional — hängt Buttons an die Nachricht)</span>
+    <select name="buttonSetId">
+      <option value="">— ohne Buttons —</option>
+      <% leisten.forEach((l) => { %>
+        <option value="<%= l.id %>" <%= einstellungen.buttonSetId === l.id ? 'selected' : '' %>>
+          <%= l.name %>
+        </option>
+      <% }) %>
+    </select>
+  </label>
+
   <div class="knopfreihe">
     <button class="knopf" type="submit"><%= t('app.speichern') %></button>
   </div>

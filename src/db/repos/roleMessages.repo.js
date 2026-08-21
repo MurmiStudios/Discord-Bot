@@ -12,6 +12,7 @@ function zuNachricht(row) {
     title: row.title ?? '',
     body: row.body,
     templateId: row.template_id,
+    buttonSetId: row.button_set_id ?? null,
     autoSend: row.auto_send === 1,
     enabled: row.enabled === 1,
     createdAt: row.created_at,
@@ -30,12 +31,14 @@ export function createRoleMessagesRepo(db) {
     `),
     insert: db.prepare(`
       INSERT INTO role_messages
-        (guild_id, role_id, title, body, template_id, auto_send, enabled, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (guild_id, role_id, title, body, template_id, button_set_id, auto_send, enabled,
+         created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `),
     update: db.prepare(`
       UPDATE role_messages
-         SET role_id = ?, title = ?, body = ?, template_id = ?, auto_send = ?, enabled = ?, updated_at = ?
+         SET role_id = ?, title = ?, body = ?, template_id = ?, button_set_id = ?,
+             auto_send = ?, enabled = ?, updated_at = ?
        WHERE guild_id = ? AND id = ?
     `),
     del: db.prepare('DELETE FROM role_messages WHERE guild_id = ? AND id = ?'),
@@ -47,17 +50,21 @@ export function createRoleMessagesRepo(db) {
     /** Alle automatisch zu versendenden Nachrichten für eine gerade vergebene Rolle. */
     autoForRole: (guildId, roleId) => stmts.autoForRole.all(guildId, roleId).map(zuNachricht),
 
-    create(guildId, { roleId, title = '', body, templateId = null, autoSend = false, enabled = true }) {
+    create(guildId, {
+      roleId, title = '', body, templateId = null, buttonSetId = null,
+      autoSend = false, enabled = true,
+    }) {
       const now = Date.now();
       const info = stmts.insert.run(
-        guildId, roleId, title, body, templateId, autoSend ? 1 : 0, enabled ? 1 : 0, now, now,
+        guildId, roleId, title, body, templateId, buttonSetId,
+        autoSend ? 1 : 0, enabled ? 1 : 0, now, now,
       );
       return this.byId(guildId, info.lastInsertRowid);
     },
 
-    update(guildId, id, { roleId, title, body, templateId, autoSend, enabled }) {
+    update(guildId, id, { roleId, title, body, templateId, buttonSetId, autoSend, enabled }) {
       stmts.update.run(
-        roleId, title ?? '', body, templateId ?? null,
+        roleId, title ?? '', body, templateId ?? null, buttonSetId ?? null,
         autoSend ? 1 : 0, enabled ? 1 : 0, Date.now(), guildId, id,
       );
       return this.byId(guildId, id);

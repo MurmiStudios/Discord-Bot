@@ -8,6 +8,7 @@ import { roleRulesRoutes } from './roleRules.routes.js';
 import { templateRoutes } from './templates.routes.js';
 import { welcomeRoutes } from './welcome.routes.js';
 import { logsRoutes } from './logs.routes.js';
+import { buttonSetRoutes } from './buttonSets.routes.js';
 
 export function panelRoutes(kontext) {
   const router = express.Router();
@@ -18,6 +19,7 @@ export function panelRoutes(kontext) {
   router.use(roleRulesRoutes(kontext));
   router.use(templateRoutes(kontext));
   router.use(welcomeRoutes(kontext));
+  router.use(buttonSetRoutes(kontext));
   router.use(logsRoutes(kontext));
   return router;
 }

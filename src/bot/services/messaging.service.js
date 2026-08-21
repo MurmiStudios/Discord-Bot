@@ -9,6 +9,7 @@ import { renderCard, vorlageAusDatensatz, platzhalterErsetzen } from '../../imag
 import { sendDM } from './dm.service.js';
 import { avatarUrl } from './member.service.js';
 import { rolleName } from './role.service.js';
+import { komponentenFuerSet } from './buttons.service.js';
 
 /**
  * Rendert die Vorlage (falls eine hinterlegt ist) und schickt die DM.
@@ -25,6 +26,7 @@ export async function sendeVorlagenDM({
   kind,
   actorId = null,
   zusatz = {},
+  buttonSetId = null,
   repos,
   config,
 }) {
@@ -66,6 +68,7 @@ export async function sendeVorlagenDM({
     content: platzhalterErsetzen(text, { ...werte, user: member.displayName, tag: member.user.username }),
     title: platzhalterErsetzen(titel, { ...werte, user: member.displayName, tag: member.user.username }),
     bild,
+    components: komponentenFuerSet(repos, guild.id, buttonSetId),
   });
 
   repos.log.add(guild.id, {
@@ -95,6 +98,7 @@ export async function sendeAutoRollenNachrichten({ client, guild, member, roleId
       text: n.body,
       kind: 'role_dm',
       zusatz: { role: rolleName(guild, roleId) },
+      buttonSetId: n.buttonSetId,
       repos,
       config,
     });

@@ -4,7 +4,7 @@
  * Dient zwei Zwecken: Nachvollziehbarkeit im Panel ("wurde die DM zugestellt?")
  * und Fehlersuche ("warum wurde Rolle X nicht entfernt?").
  */
-export const LOG_ARTEN = ['dm', 'role_dm', 'welcome_dm', 'channel', 'rule_applied', 'auth', 'error'];
+export const LOG_ARTEN = ['dm', 'role_dm', 'welcome_dm', 'channel', 'button', 'rule_applied', 'auth', 'error'];
 export const LOG_STATUS = ['ok', 'failed', 'skipped'];
 
 function zuEintrag(row) {

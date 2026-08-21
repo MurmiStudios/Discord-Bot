@@ -37,6 +37,7 @@ export function rolleVerwaltbar(guild, rolle) {
 
 /** Alle Rollen des Servers, für Auswahllisten im Panel aufbereitet. */
 export function listeRollen(guild) {
+  if (!guild) return [];
   return [...guild.roles.cache.values()]
     .filter((r) => r.id !== guild.id)
     .sort((a, b) => b.position - a.position)
@@ -56,5 +57,5 @@ export function listeRollen(guild) {
 }
 
 export function rolleName(guild, roleId) {
-  return guild.roles.cache.get(roleId)?.name ?? `Unbekannte Rolle (${roleId})`;
+  return guild?.roles.cache.get(roleId)?.name ?? `Unbekannte Rolle (${roleId})`;
 }

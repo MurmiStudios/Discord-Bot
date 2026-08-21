@@ -13,6 +13,7 @@ const eingabe = z.object({
   title: z.string().max(256).default(''),
   body: z.string().min(1, 'Bitte einen Text eingeben').max(3000),
   templateId: z.string().optional().transform((v) => (v ? Number(v) : null)),
+  buttonSetId: z.string().optional().transform((v) => (v ? Number(v) : null)),
   autoSend: z.coerce.boolean().default(false),
   enabled: z.coerce.boolean().default(true),
 });
@@ -34,6 +35,7 @@ export function roleMessagesRoutes({ repos, config, log, getKontext }) {
       })),
       rollen: guild ? listeRollen(guild) : [],
       vorlagen: repos.templates.all(config.GUILD_ID),
+      leisten: repos.buttonSets.alleSets(config.GUILD_ID),
     });
   });
 
@@ -78,6 +80,7 @@ export function roleMessagesRoutes({ repos, config, log, getKontext }) {
           templateId: nachricht.templateId,
           titel: nachricht.title,
           text: nachricht.body,
+          buttonSetId: nachricht.buttonSetId,
           kind: 'role_dm',
           actorId,
           zusatz: { role: rolleName(guild, nachricht.roleId) },

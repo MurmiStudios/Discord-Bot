@@ -9,6 +9,7 @@ import { createRoleRulesRepo } from './roleRules.repo.js';
 import { createRoleMessagesRepo } from './roleMessages.repo.js';
 import { createMemberRolesRepo } from './memberRoles.repo.js';
 import { createLogRepo } from './log.repo.js';
+import { createButtonSetsRepo } from './buttonSets.repo.js';
 
 export function createRepos(db) {
   return {
@@ -18,6 +19,7 @@ export function createRepos(db) {
     roleMessages: createRoleMessagesRepo(db),
     memberRoles: createMemberRolesRepo(db),
     log: createLogRepo(db),
+    buttonSets: createButtonSetsRepo(db),
   };
 }
 

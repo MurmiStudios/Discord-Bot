@@ -20,6 +20,7 @@ const eingabe = z.object({
     .optional()
     .transform((v) => (v ? Number(v) : null))
     .refine((v) => v === null || Number.isInteger(v), 'Ungültige Vorlage'),
+  buttonSetId: z.string().optional().transform((v) => (v ? Number(v) : null)),
 });
 
 export function dmRoutes({ repos, config, log, getKontext }) {
@@ -32,6 +33,7 @@ export function dmRoutes({ repos, config, log, getKontext }) {
       mitglieder: guild ? sucheMitglieder(guild, '', 500) : [],
       rollen: guild ? listeRollen(guild) : [],
       vorlagen: repos.templates.all(config.GUILD_ID),
+      leisten: repos.buttonSets.alleSets(config.GUILD_ID),
       maxEmpfaenger: config.DM_MAX_RECIPIENTS,
       seitenSkript: 'member-picker.js',
     });
@@ -55,7 +57,7 @@ export function dmRoutes({ repos, config, log, getKontext }) {
     const { guild, client } = getKontext();
     if (!guild) return flashUndZurueck(req, res, 'fehler', 'Der Bot ist nicht mit dem Server verbunden.', '/dm');
 
-    const { empfaenger, title, content, templateId } = req.geprueft;
+    const { empfaenger, title, content, templateId, buttonSetId } = req.geprueft;
 
     if (empfaenger.length === 0) {
       return flashUndZurueck(req, res, 'fehler', 'Bitte wähle mindestens einen Empfänger.', '/dm');
@@ -67,7 +69,7 @@ export function dmRoutes({ repos, config, log, getKontext }) {
         '/dm',
       );
     }
-    if (!content.trim() && !title && !templateId) {
+    if (!content.trim() && !title && !templateId && !buttonSetId) {
       return flashUndZurueck(req, res, 'fehler', 'Die Nachricht ist leer.', '/dm');
     }
 
@@ -80,7 +82,7 @@ export function dmRoutes({ repos, config, log, getKontext }) {
 
         const r = await sendeVorlagenDM({
           client, guild, member, templateId, titel: title, text: content,
-          kind: 'dm', actorId, repos, config,
+          kind: 'dm', actorId, buttonSetId, repos, config,
         });
         return { ok: r.ok, grund: r.grund, label: member.displayName };
       },

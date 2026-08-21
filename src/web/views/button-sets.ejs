@@ -1,0 +1,79 @@
+<h1>Aktionsleisten</h1>
+<p class="unterzeile">
+  Eine Aktionsleiste ist eine Reihe von Buttons, die du an beliebige Nachrichten
+  hängen kannst — Direktnachricht, Kanal-Nachricht, Rollen- und Willkommensnachricht.
+  Ein Klick kann mehrere Dinge nacheinander auslösen.
+</p>
+
+<div class="karte">
+  <h2>Neue Leiste</h2>
+  <form method="post" action="/aktionsleisten">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="zeile">
+      <label>
+        <span class="feldname">Name</span>
+        <input type="text" name="name" maxlength="80" required placeholder="z. B. Regeln akzeptieren">
+      </label>
+      <label>
+        <span class="feldname">Notiz (optional)</span>
+        <input type="text" name="note" maxlength="200" placeholder="wofür ist diese Leiste gedacht?">
+      </label>
+      <button class="knopf" type="submit">Anlegen</button>
+    </div>
+  </form>
+</div>
+
+<% if (leisten.length === 0) { %>
+  <div class="karte">
+    <div class="leer">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="2" y="8" width="9" height="8" rx="2"/><rect x="13" y="8" width="9" height="8" rx="2"/>
+      </svg>
+      <p>
+        <strong>Noch keine Aktionsleiste angelegt</strong>
+        Lege oben eine an und füge ihr danach Buttons hinzu.
+      </p>
+    </div>
+  </div>
+<% } else { %>
+  <% leisten.forEach((l) => { %>
+    <div class="karte">
+      <div class="leiste-kopfzeile">
+        <div>
+          <h2 class="ohne-abstand-oben"><%= l.name %></h2>
+          <p class="hilfe">
+            <%= l.anzahl %> Button<%= l.anzahl === 1 ? '' : 's' %><%= l.note ? ' · ' + l.note : '' %>
+          </p>
+        </div>
+        <div class="knopfreihe">
+          <a class="knopf knopf--leise" href="/aktionsleisten/<%= l.id %>"><%= t('app.bearbeiten') %></a>
+          <form method="post" action="/aktionsleisten/<%= l.id %>/loeschen"
+                data-bestaetigen="Leiste „<%= l.name %>“ wirklich löschen?">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="knopf knopf--gefahr" type="submit"><%= t('app.loeschen') %></button>
+          </form>
+        </div>
+      </div>
+
+      <% if (l.buttons.length) { %>
+        <div class="button-vorschau">
+          <% l.buttons.forEach((b) => { %>
+            <span class="dc-knopf dc-knopf--<%= b.style %> <%= b.enabled ? '' : 'dc-knopf--aus' %>">
+              <%= b.emoji %> <%= b.label %>
+            </span>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+  <% }) %>
+<% } %>
+
+<div class="karte">
+  <h2>Gut zu wissen</h2>
+  <p class="hilfe">
+    Buttons leben in der bereits zugestellten Nachricht weiter. Änderst du eine
+    Leiste, wirkt das erst bei <strong>neu versendeten</strong> Nachrichten —
+    Discord kann bestehende Nachrichten nicht nachträglich anpassen. Löschst du
+    eine Leiste, bleiben alte Buttons sichtbar, tun aber nichts mehr.
+  </p>
+</div>

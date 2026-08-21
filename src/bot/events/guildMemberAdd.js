@@ -27,8 +27,9 @@ export function registriereGuildMemberAdd(client, { repos, config, log }) {
     const text = repos.settings.get('welcome.body', '');
     const titel = repos.settings.get('welcome.title', '');
     const templateId = repos.settings.get('welcome.template_id', null);
+    const buttonSetId = repos.settings.get('welcome.button_set_id', null);
 
-    if (!text && !titel && !templateId) {
+    if (!text && !titel && !templateId && !buttonSetId) {
       log.warn('Willkommensnachricht ist aktiv, aber es ist kein Inhalt hinterlegt.');
       return;
     }
@@ -41,6 +42,7 @@ export function registriereGuildMemberAdd(client, { repos, config, log }) {
       titel,
       text,
       kind: 'welcome_dm',
+      buttonSetId,
       repos,
       config,
     });

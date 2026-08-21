@@ -12,6 +12,7 @@
 import { registriereGuildMemberAdd } from './events/guildMemberAdd.js';
 import { registriereGuildMemberUpdate } from './events/guildMemberUpdate.js';
 import { registriereGuildMemberRemove } from './events/guildMemberRemove.js';
+import { registriereInteractionCreate } from './events/interactionCreate.js';
 
 export async function befuelleMomentaufnahmen(guild, repos, log) {
   const mitglieder = await guild.members.fetch();
@@ -28,6 +29,7 @@ export function registriereEreignisse(client, kontext) {
   registriereGuildMemberAdd(client, kontext);
   registriereGuildMemberUpdate(client, kontext);
   registriereGuildMemberRemove(client, kontext);
+  registriereInteractionCreate(client, kontext);
 }
 
 /**

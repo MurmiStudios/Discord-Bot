@@ -27,5 +27,18 @@
     <textarea name="content" maxlength="4000" placeholder="Deine Nachricht …"></textarea>
   </label>
 
+  <label>
+    <span class="feldname">Aktionsleiste (optional — hängt Buttons an die Nachricht)</span>
+    <select name="buttonSetId">
+      <option value="">— ohne Buttons —</option>
+      <% leisten.forEach((l) => { %>
+        <option value="<%= l.id %>"><%= l.name %></option>
+      <% }) %>
+    </select>
+    <% if (leisten.length === 0) { %>
+      <p class="hilfe">Noch keine Leiste vorhanden — <a href="/aktionsleisten">jetzt eine anlegen</a>.</p>
+    <% } %>
+  </label>
+
   <button class="knopf" type="submit"><%= t('app.senden') %></button>
 </form>

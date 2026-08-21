@@ -13,6 +13,7 @@ const eingabe = z.object({
     .string()
     .optional()
     .transform((v) => (v ? Number(v) : null)),
+  buttonSetId: z.string().optional().transform((v) => (v ? Number(v) : null)),
 });
 
 export function welcomeRoutes({ repos, config, getKontext }) {
@@ -26,15 +27,17 @@ export function welcomeRoutes({ repos, config, getKontext }) {
         title: repos.settings.get('welcome.title', ''),
         body: repos.settings.get('welcome.body', 'Hallo {user}, schön dass du da bist!'),
         templateId: repos.settings.get('welcome.template_id', null),
+        buttonSetId: repos.settings.get('welcome.button_set_id', null),
       },
       vorlagen: repos.templates.all(config.GUILD_ID),
+      leisten: repos.buttonSets.alleSets(config.GUILD_ID),
     });
   });
 
   router.post('/willkommen', validate(eingabe), (req, res) => {
-    const { enabled, title, body, templateId } = req.geprueft;
+    const { enabled, title, body, templateId, buttonSetId } = req.geprueft;
 
-    if (enabled && !title && !body.trim() && !templateId) {
+    if (enabled && !title && !body.trim() && !templateId && !buttonSetId) {
       return flashUndZurueck(
         req, res, 'fehler',
         'Die Willkommensnachricht ist aktiv, hat aber keinen Inhalt. Bitte Text oder Bildvorlage angeben.',
@@ -47,6 +50,7 @@ export function welcomeRoutes({ repos, config, getKontext }) {
       'welcome.title': title,
       'welcome.body': body,
       'welcome.template_id': templateId,
+      'welcome.button_set_id': buttonSetId,
     });
 
     return flashUndZurueck(
@@ -71,6 +75,7 @@ export function welcomeRoutes({ repos, config, getKontext }) {
       templateId: repos.settings.get('welcome.template_id', null),
       titel: repos.settings.get('welcome.title', ''),
       text: repos.settings.get('welcome.body', ''),
+      buttonSetId: repos.settings.get('welcome.button_set_id', null),
       kind: 'welcome_dm',
       actorId: req.session.user.id,
       repos, config,
