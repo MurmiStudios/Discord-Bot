@@ -3,7 +3,7 @@
   <pre class="fehler-text"><%= nachricht %></pre>
   <div class="knopfreihe">
     <a class="knopf" href="/">Zur Übersicht</a>
-    <% if (zeigeAbmelden && user) { %>
+    <% if (zeigeAbmelden) { %>
       <form method="post" action="/logout">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <button class="knopf knopf--leise" type="submit"><%= t('app.abmelden') %></button>

@@ -97,7 +97,7 @@ export function dmRoutes({ repos, config, log, getKontext }) {
       return res.status(404).render('error', {
         titel: 'Auftrag nicht gefunden',
         nachricht: 'Der Versandauftrag ist abgelaufen oder existiert nicht.',
-        zeigeAbmelden: true,
+        zeigeAbmelden: false,
       });
     }
     return res.render('dm-auftrag', { titel: 'Versandergebnis', auftrag });

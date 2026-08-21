@@ -1,7 +1,17 @@
 <div class="anmelde-karte">
-  <h1>🤖 <%= t('app.titel') %></h1>
+  <div class="anmelde-marke">
+    <svg class="marke-zeichen marke-zeichen--gross" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="2" y="5" width="20" height="14" rx="5"/>
+      <circle cx="9" cy="12" r="1.6" fill="currentColor" stroke="none"/>
+      <circle cx="15" cy="12" r="1.6" fill="currentColor" stroke="none"/>
+    </svg>
+    <h1><%= t('app.titel') %></h1>
+  </div>
+
   <p>Melde dich mit deinem Discord-Konto an, um das Panel zu nutzen.</p>
+
   <a class="knopf knopf--discord" href="<%= authUrl %>"><%= t('app.anmelden') %></a>
+
   <p class="fussnote">
     Zugriff haben nur freigeschaltete Konten. Es wird ausschliesslich deine
     Discord-Kennung gelesen — keine Nachrichten und keine E-Mail-Adresse.

@@ -90,6 +90,10 @@ export function requirePanelAccess(getKontext) {
         actorId: req.session.user.id,
         detail: `Zugriff verweigert: ${grund}`,
       });
+      // Ohne Navigation: wer nicht freigeschaltet ist, käme über jeden
+      // Menüpunkt nur zur nächsten Abweisung. Der Abmelden-Knopf steht
+      // dafür in der Fehlerkarte selbst.
+      res.locals.user = null;
       return res.status(403).render('error', {
         titel: 'Kein Zugriff',
         nachricht: grund,

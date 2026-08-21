@@ -634,8 +634,19 @@ td code {
   text-align: left;
   margin-top: 8vh;
 }
-.anmelde-karte h1 {
+.anmelde-marke {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s3);
   margin-bottom: var(--s3);
+}
+.anmelde-marke h1 {
+  margin: 0;
+}
+.marke-zeichen--gross {
+  width: 34px;
+  height: 34px;
 }
 .fehler-text {
   background: var(--bg-feld);
@@ -778,6 +789,21 @@ td code {
 }
 .vorlagen-kachel {
   margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+.vorlagen-bild {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius);
+  border: 1px solid var(--rand);
+  background: var(--bg-feld);
+}
+.vorlagen-kachel .hilfe {
+  margin: 0;
+  flex: 1;
 }
 
 .warnung-rolle {

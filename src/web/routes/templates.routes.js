@@ -55,7 +55,7 @@ export function templateRoutes({ repos, config, getKontext }) {
     const vorlage = repos.templates.byId(config.GUILD_ID, Number(req.params.id));
     if (!vorlage) {
       return res.status(404).render('error', {
-        titel: 'Vorlage nicht gefunden', nachricht: 'Diese Bildvorlage existiert nicht.', zeigeAbmelden: true,
+        titel: 'Vorlage nicht gefunden', nachricht: 'Diese Bildvorlage existiert nicht.', zeigeAbmelden: false,
       });
     }
     const { guild } = getKontext();
@@ -135,6 +135,33 @@ export function templateRoutes({ repos, config, getKontext }) {
     if (vorlage?.backgroundFile) loescheHintergrund(vorlage.backgroundFile, config);
     repos.templates.delete(config.GUILD_ID, id);
     return flashUndZurueck(req, res, 'erfolg', 'Vorlage gelöscht.', '/vorlagen');
+  });
+
+  /**
+   * Miniaturansicht einer gespeicherten Vorlage für die Galerie.
+   *
+   * Bewusst GET (der Live-Vorschau-Endpunkt ist POST mit CSRF-Token und
+   * taugt daher nicht als Bildquelle). Es wird nur eine bereits gespeicherte
+   * Vorlage gerendert, keine Eingabe verarbeitet.
+   */
+  router.get('/vorlagen/:id/vorschau.png', limits.vorschau, async (req, res, next) => {
+    const vorlage = repos.templates.byId(config.GUILD_ID, Number(req.params.id));
+    if (!vorlage) return res.status(404).end();
+
+    const { guild } = getKontext();
+    try {
+      const { buffer } = await renderCard(
+        vorlageAusDatensatz(vorlage, config.uploadsDir),
+        BEISPIEL,
+        { guild: guild?.name ?? 'Beispielserver', role: 'Beispielrolle', count: guild?.memberCount ?? 42 },
+      );
+      // Kurz zwischenspeichern: die Galerie lädt beim Blättern sonst jedes
+      // Bild neu, obwohl sich die Vorlage selten ändert.
+      res.type('png').set('Cache-Control', 'private, max-age=60').send(buffer);
+      return undefined;
+    } catch (err) {
+      return next(err);
+    }
   });
 
   /**

@@ -822,15 +822,19 @@ alle Mitglieder (dafür braucht es den privilegierten Intent aus Schritt 8).
 ## Für Entwickler
 
 ```bash
-npm test                # 86 Tests, ohne Discord-Verbindung
+npm test                # 93 Tests, ohne Discord-Verbindung
 npm run render:sample   # Beispielbilder nach data/generated/
 npm run dev             # Start mit automatischem Neustart bei Änderungen
 ```
 
 Getestet sind die Regel-Logik (inklusive Schleifenfreiheit, Rollenhierarchie und
 gleichzeitiger Ereignisse), das Vorlagen-Schema, der Bild-Renderer, die
-OAuth2-Absicherung, die Upload-Prüfung, die Konfigurationsregeln und die
-Datenbankschicht.
+OAuth2-Absicherung, die Upload-Prüfung, die Konfigurationsregeln, die
+Content-Security-Policy und die Datenbankschicht.
+
+Die Oberfläche wird zusätzlich im Browser geprüft. Das ist kein Luxus: eine
+falsch gesetzte CSP-Direktive liess das Panel einmal komplett ohne Gestaltung
+ausliefern, und `curl` konnte das nicht zeigen — es ignoriert CSP vollständig.
 
 ### Aufbau
 

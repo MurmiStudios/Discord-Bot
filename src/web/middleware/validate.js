@@ -18,7 +18,7 @@ export function validate(schema, quelle = 'body') {
       return res.status(400).render('error', {
         titel: 'Eingabe unvollständig',
         nachricht: fehler.map((f) => `${f.feld}: ${f.meldung}`).join('\n'),
-        zeigeAbmelden: true,
+        zeigeAbmelden: false,
       });
     }
     // Geprüfte Daten weiterreichen. req.query ist in Express 5 nur lesbar,

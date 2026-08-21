@@ -10,7 +10,7 @@ export function notFound(req, res) {
   res.status(404).render('error', {
     titel: 'Seite nicht gefunden',
     nachricht: `Die Adresse „${req.path}“ gibt es nicht.`,
-    zeigeAbmelden: true,
+    zeigeAbmelden: false,
   });
 }
 
@@ -25,7 +25,7 @@ export function errorHandler(log, config) {
         nachricht:
           'Das Formular war zu lange geöffnet oder stammt nicht von dieser Seite. ' +
           'Bitte lade die Seite neu und versuche es erneut.',
-        zeigeAbmelden: true,
+        zeigeAbmelden: false,
       });
     }
 
@@ -33,7 +33,7 @@ export function errorHandler(log, config) {
       return res.status(413).render('error', {
         titel: 'Datei zu gross',
         nachricht: `Die Datei überschreitet das Limit von ${config.MAX_UPLOAD_MB} MB.`,
-        zeigeAbmelden: true,
+        zeigeAbmelden: false,
       });
     }
 
@@ -43,7 +43,7 @@ export function errorHandler(log, config) {
       nachricht: config.isProduction
         ? 'Es ist ein Fehler aufgetreten. Details stehen im Server-Protokoll.'
         : String(err?.stack ?? err),
-      zeigeAbmelden: true,
+      zeigeAbmelden: false,
     });
   };
 }

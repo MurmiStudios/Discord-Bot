@@ -23,6 +23,9 @@
   <div class="vorlagen-galerie">
     <% vorlagen.forEach((v) => { %>
       <div class="karte vorlagen-kachel">
+        <img class="vorlagen-bild" src="/vorlagen/<%= v.id %>/vorschau.png"
+             alt="Vorschau der Vorlage <%= v.name %>" loading="lazy"
+             width="<%= v.width %>" height="<%= v.height %>">
         <h2 class="ohne-abstand-oben"><%= v.name %></h2>
         <p class="hilfe">
           <%= v.kind === 'welcome' ? 'Willkommen' : v.kind === 'role' ? 'Rolle' : 'Allgemein' %>
