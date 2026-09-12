@@ -26,6 +26,11 @@ if (baseUrl.startsWith('https://') && !trustProxy) {
 
 module.exports = {
   port: Number(process.env.PORT || 3000),
+  // 127.0.0.1 als sicherer Default: auf einem Server soll nur der lokale
+  // Reverse-Proxy (Caddy/nginx) das Panel erreichen koennen, nicht das
+  // offene Internet direkt. Nur wer bewusst ohne Reverse-Proxy oeffentlich
+  // erreichbar sein will, setzt HOST=0.0.0.0.
+  host: process.env.HOST || '127.0.0.1',
   baseUrl,
   trustProxy,
   sessionSecret: need('SESSION_SECRET'),

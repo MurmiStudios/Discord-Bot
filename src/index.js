@@ -5,8 +5,8 @@ const createApp = require('./web/app');
 
 async function main() {
   const app = createApp();
-  app.listen(config.port, () => {
-    console.log(`[web] Panel läuft auf ${config.baseUrl}`);
+  app.listen(config.port, config.host, () => {
+    console.log(`[web] Panel läuft auf ${config.baseUrl} (lauscht auf ${config.host}:${config.port})`);
   });
 
   try {
