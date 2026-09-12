@@ -1,0 +1,29 @@
+{
+  "name": "discord-bot-webpanel",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "Discord-Bot mit Webpanel zum Versenden von Nachrichten, Willkommens- und Rollen-Automatiken, Aktionsleisten und Bildvorlagen.",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "^0.1.53",
+    "discord.js": "^14.16.3",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.21.1",
+    "express-rate-limit": "^7.4.1",
+    "express-session": "^1.18.1",
+    "helmet": "^8.0.0",
+    "multer": "^2.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  }
+}

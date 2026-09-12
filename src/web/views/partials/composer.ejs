@@ -1,0 +1,100 @@
+<div class="step-label">Text</div>
+<div class="field">
+  <textarea class="input" name="content" id="c-content" maxlength="2000" rows="4" placeholder="Nachrichtentext …"><%= values.content %></textarea>
+  <div class="row embed-count-row">
+    <span class="field-hint mt-0">Platzhalter werden beim Senden ersetzt.</span>
+    <span class="char-count" id="c-content-count"><%= values.content.length %> / 2000</span>
+  </div>
+  <div class="insert-row">
+    <span class="insert-label">Einfügen:</span>
+    <button type="button" class="chip-btn" data-insert-into="c-content" data-insert-text="{user}">{user}</button>
+    <button type="button" class="chip-btn" data-insert-into="c-content" data-insert-text="{tag}">{tag}</button>
+    <button type="button" class="chip-btn" data-insert-into="c-content" data-insert-text="{guild}">{guild}</button>
+    <button type="button" class="chip-btn" data-insert-into="c-content" data-insert-text="{role}">{role}</button>
+    <button type="button" class="chip-btn" data-insert-into="c-content" data-insert-text="{count}">{count}</button>
+  </div>
+</div>
+
+<div class="step-label">Anhänge</div>
+
+<div class="card">
+  <div class="card-row">
+    <div>
+      <div class="row-title">Embed-Karte</div>
+      <div class="row-sub">Eine farbige Karte unter dem Text</div>
+    </div>
+    <label class="switch">
+      <input type="checkbox" name="embedEnabled" id="c-embed-enabled" <%= values.embedEnabled ? 'checked' : '' %>>
+      <span class="track"><span class="thumb"></span></span>
+    </label>
+  </div>
+  <div class="card-body" id="c-embed-body" <%= values.embedEnabled ? '' : 'hidden' %>>
+    <div class="field">
+      <label class="field-label" for="c-embed-title">Titel</label>
+      <input class="input" type="text" id="c-embed-title" name="embed[title]" maxlength="256" value="<%= (values.embed && values.embed.title) || '' %>">
+    </div>
+    <div class="field">
+      <label class="field-label" for="c-embed-desc">Beschreibung</label>
+      <textarea class="input" id="c-embed-desc" name="embed[description]" rows="3" maxlength="4096"><%= (values.embed && values.embed.description) || '' %></textarea>
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label class="field-label" for="c-embed-footer">Fusszeile</label>
+        <input class="input" type="text" id="c-embed-footer" name="embed[footer]" maxlength="2048" value="<%= (values.embed && values.embed.footer && values.embed.footer.text) || '' %>">
+      </div>
+      <div class="field">
+        <label class="field-label" for="c-embed-color">Farbe</label>
+        <input class="input" type="color" id="c-embed-color" name="embed[color]" value="<%= (values.embed && values.embed.color) || '#5865f2' %>">
+      </div>
+    </div>
+    <label class="field-label">Felder</label>
+    <% fieldRows.forEach(function(f, i){ %>
+      <div class="row field-row">
+        <input class="input" type="text" name="embed[fields][<%= i %>][name]" placeholder="Name" maxlength="256" value="<%= f.name %>">
+        <input class="input" type="text" name="embed[fields][<%= i %>][value]" placeholder="Wert" maxlength="1024" value="<%= f.value %>">
+        <label class="switch" title="Nebeneinander">
+          <input type="checkbox" name="embed[fields][<%= i %>][inline]" <%= f.inline ? 'checked' : '' %>>
+          <span class="track"><span class="thumb"></span></span>
+        </label>
+      </div>
+    <% }); %>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-row">
+    <div>
+      <div class="row-title">Bildvorlage</div>
+      <div class="row-sub">Personalisiertes Bild mit Profilbild und Name</div>
+    </div>
+    <select class="input" name="imageTemplateId" id="c-image-template" >
+      <option value="">ohne Bild</option>
+      <% imageTemplates.forEach(function(t){ %>
+        <option value="<%= t.id %>" <%= values.imageTemplateId === t.id ? 'selected' : '' %>><%= t.name %></option>
+      <% }); %>
+    </select>
+  </div>
+  <div class="card-row">
+    <div>
+      <div class="row-title">Aktionsleiste</div>
+      <div class="row-sub">Buttons unter der Nachricht</div>
+    </div>
+    <select class="input" name="actionBarId" id="c-action-bar" >
+      <option value="">keine</option>
+      <% actionBars.forEach(function(b){ %>
+        <option value="<%= b.id %>" <%= values.actionBarId === b.id ? 'selected' : '' %>><%= b.name %></option>
+      <% }); %>
+    </select>
+  </div>
+</div>
+
+<div class="step-label">
+  <span>Vorschau</span>
+  <div class="tabs" id="c-preview-mode">
+    <button type="button" class="tab active" data-mode="sample">Mit Beispieldaten</button>
+    <button type="button" class="tab" data-mode="raw">Rohtext</button>
+  </div>
+</div>
+<div id="c-preview">
+  <%- include('discordPreview', { contextLabel: contextLabel, preview: preview }) %>
+</div>

@@ -1,0 +1,74 @@
+<%- include('partials/header') %>
+
+<div class="page-header">
+  <h1>Übersicht</h1>
+  <p><%= guildName || 'Server' %><%= memberCount != null ? ' · ' + memberCount.toLocaleString('de-DE') + ' Mitglieder' : '' %></p>
+  <div class="page-actions">
+    <a class="btn btn-primary" href="/nachricht"><%- icons.message %> Neue Nachricht</a>
+  </div>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="label">Zugestellt · 24 h</div>
+    <div class="value"><%= stats.sent24h %></div>
+    <div class="sub good">Läuft.</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Fehlgeschlagen · 24 h</div>
+    <div class="value"><%= stats.failed24h %></div>
+    <div class="sub <%= stats.failed24h ? 'warn' : '' %>"><%= stats.failed24h ? 'Details im Protokoll' : 'Keine Ausfälle' %></div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Gespeicherte Nachrichten</div>
+    <div class="value"><%= stats.savedMessages %></div>
+    <div class="sub">jederzeit wieder sendbar</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Aktive Rollenregeln</div>
+    <div class="value"><%= stats.activeRules %> von <%= stats.totalRules %></div>
+    <div class="sub <%= stats.activeRules < stats.totalRules ? 'warn' : '' %>"><%= stats.activeRules < stats.totalRules ? 'nicht alle greifen' : 'alle aktiv' %></div>
+  </div>
+</div>
+
+<% if (attention.length) { %>
+  <div class="step-label">Braucht Aufmerksamkeit</div>
+  <div class="card">
+    <% attention.forEach(function(a){ %>
+      <div class="card-row">
+        <div class="row-title"><%= a.text %></div>
+        <a class="btn btn-sm" href="<%= a.href %>"><%= a.cta %></a>
+      </div>
+    <% }); %>
+  </div>
+<% } %>
+
+<div class="step-label">Automatiken</div>
+<div class="card">
+  <% automations.forEach(function(a){ %>
+    <div class="card-row">
+      <div>
+        <div class="row-title"><a href="<%= a.href %>"><%= a.name %></a></div>
+        <div class="row-sub"><%= a.desc %></div>
+      </div>
+      <span class="badge <%= a.active ? 'badge-success' : 'badge-muted' %>"><%= a.active ? 'aktiv' : 'liegt herum' %></span>
+    </div>
+  <% }); %>
+</div>
+
+<div class="step-label">Letzte Vorgänge <a href="/protokoll" class="faint">Alle im Protokoll</a></div>
+<% if (!recent.length) { %>
+  <p class="muted">Noch keine Einträge.</p>
+<% } %>
+<% recent.forEach(function(r){ %>
+  <div class="log-entry <%= r.success ? '' : 'failed' %>">
+    <span class="dot"></span>
+    <div class="summary">
+      <%= r.summary %>
+      <% if (r.reason) { %><div class="reason"><%= r.reason %></div><% } %>
+    </div>
+    <span class="time faint"><%= new Date(r.created_at + 'Z').toLocaleString('de-DE', {hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit'}) %></span>
+  </div>
+<% }); %>
+
+<%- include('partials/footer') %>

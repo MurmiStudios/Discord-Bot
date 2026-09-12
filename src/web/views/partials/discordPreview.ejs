@@ -1,0 +1,51 @@
+<div class="discord-preview">
+  <div class="context"><%- icons.message %> <%= contextLabel %></div>
+  <div class="discord-msg">
+    <div class="pfp"></div>
+    <div class="body-col">
+      <div class="head">
+        <span class="name">Panel-Bot</span><span class="bot-tag">BOT</span>
+        <span class="time">Heute um 12:00</span>
+      </div>
+      <% if (preview.content) { %><div class="content-text"><%= preview.content %></div><% } %>
+
+      <% if (preview.embed) { %>
+        <div class="discord-embed">
+          <% if (preview.embed.author) { %><div class="e-author"><%= preview.embed.author.name %></div><% } %>
+          <% if (preview.embed.title) { %><div class="e-title"><%= preview.embed.title %></div><% } %>
+          <% if (preview.embed.description) { %><div class="e-desc"><%= preview.embed.description %></div><% } %>
+          <% if (preview.embed.fields && preview.embed.fields.length) { %>
+            <div class="e-fields">
+              <% preview.embed.fields.forEach(function(f){ %>
+                <div class="e-field <%= f.inline ? 'inline' : '' %>">
+                  <div class="fn"><%= f.name %></div>
+                  <div class="fv"><%= f.value %></div>
+                </div>
+              <% }); %>
+            </div>
+          <% } %>
+          <% if (preview.embed.image) { %><img class="e-image" src="<%= preview.embed.image.url %>" alt=""><% } %>
+          <% if (preview.embed.footer) { %><div class="e-footer"><%= preview.embed.footer.text %></div><% } %>
+        </div>
+      <% } %>
+
+      <% if (!preview.embed && preview.imageDataUrl) { %>
+        <img class="e-image standalone-image" src="<%= preview.imageDataUrl %>" alt="">
+      <% } %>
+
+      <% if (preview.buttons && preview.buttons.length) { %>
+        <div class="discord-buttons">
+          <% preview.buttons.forEach(function(b){ %>
+            <span class="discord-btn style-<%= b.style || 'grey' %>"><%= b.emoji ? b.emoji + ' ' : '' %><%= b.label %><%= b.style === 'link' ? ' ↗' : '' %></span>
+          <% }); %>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+<% if (preview.embed) { %>
+  <div class="row embed-count-row">
+    <span class="faint">Zeichen im Embed</span>
+    <span class="char-count <%= preview.embedOverLimit ? 'over' : '' %>"><%= preview.embedLength %> / 6000</span>
+  </div>
+<% } %>

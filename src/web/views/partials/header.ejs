@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="de" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> · Discord-Panel</title>
+  <meta name="csrf-token" content="<%= csrfToken %>">
+  <link rel="stylesheet" href="/public/css/tokens.css">
+  <link rel="stylesheet" href="/public/css/app.css">
+</head>
+<body>
+  <a href="#main" class="skip-link">Zum Inhalt springen</a>
+
+  <header class="topbar">
+    <a href="/" class="brand">
+      <span class="brand-mark">D</span>
+      Discord-Panel
+    </a>
+    <div class="topbar-right">
+      <span class="bot-status <%= botOnline ? '' : 'offline' %>">
+        <span class="dot"></span><%= botOnline ? 'Bot verbunden' : 'Bot nicht verbunden' %>
+      </span>
+      <button type="button" class="icon-btn" id="search-open" aria-label="Seitensuche (/)"><%- icons.search %></button>
+      <% if (user) { %>
+        <form action="/logout" method="post" class="inline-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="icon-btn" aria-label="Abmelden" title="Abmelden (<%= accessLabel %>)"><%- icons.logout %></button>
+        </form>
+        <span class="avatar" title="<%= user.username %> · <%= accessLabel %>"><%= user.username.slice(0,2).toUpperCase() %></span>
+      <% } %>
+    </div>
+  </header>
+
+  <% if (typeof nav !== 'undefined' && nav) { %>
+  <div class="nav-wrap">
+    <nav class="panel-nav" aria-label="Bereiche">
+      <% nav.forEach(function(group){ %>
+        <span class="nav-group-label"><%= group.label %></span>
+        <% group.items.forEach(function(item){ %>
+          <a class="nav-pill" href="<%= item.href %>" <%= currentPath === item.href ? 'aria-current="page"' : '' %>>
+            <%- item.icon %><%= item.label %>
+            <% if (item.count != null) { %><span class="count"><%= item.count %></span><% } %>
+            <% if (item.badge) { %><span class="badge-new"><%= item.badge %></span><% } %>
+          </a>
+        <% }); %>
+      <% }); %>
+    </nav>
+  </div>
+  <% } %>
+
+  <script type="application/json" id="page-index"><%- JSON.stringify(
+    (typeof nav !== 'undefined' && nav ? nav : []).flatMap(function(g){ return g.items; }).map(function(i){ return { href: i.href, label: i.label }; })
+  ) %></script>
+
+  <div class="search-overlay" id="search-overlay" hidden>
+    <div class="search-box" role="dialog" aria-label="Seitensuche">
+      <input type="text" id="search-input" placeholder="Seite suchen … (Esc zum Schliessen)" autocomplete="off">
+      <div class="search-results" id="search-results"></div>
+    </div>
+  </div>
+
+  <main id="main" class="page">
+    <% if (typeof flash !== 'undefined' && flash) { %>
+      <div class="notice notice-<%= flash.type || 'info' %>"><%= flash.text %></div>
+    <% } %>

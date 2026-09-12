@@ -1,0 +1,72 @@
+<%- include('partials/header') %>
+
+<div class="page-header">
+  <h1>Gespeicherte Nachrichten</h1>
+  <p>Fertige Nachrichten samt Ziel — jederzeit wieder sendbar.</p>
+</div>
+
+<div class="tabs">
+  <a class="tab <%= filter === 'alle' ? 'active' : '' %>" href="?filter=alle">Alle <span class="count"><%= counts.alle %></span></a>
+  <a class="tab <%= filter === 'dm' ? 'active' : '' %>" href="?filter=dm">Direktnachricht <span class="count"><%= counts.dm %></span></a>
+  <a class="tab <%= filter === 'channel' ? 'active' : '' %>" href="?filter=channel">Kanal <span class="count"><%= counts.channel %></span></a>
+</div>
+
+<% if (!items.length) { %>
+  <div class="empty-state">
+    <h3>Noch keine gespeicherten Nachrichten</h3>
+    <p>Speichere eine Nachricht beim <a href="/nachricht">Senden</a>, um sie hier wiederzufinden.</p>
+  </div>
+<% } %>
+
+<% items.forEach(function(m){ %>
+  <div class="card">
+    <div class="card-row">
+      <div>
+        <div class="row-title"><%= m.name %></div>
+        <div class="row-sub">
+          <%= m.kind === 'dm' ? 'Direktnachricht' : 'Kanal' %> · <%= m.targetLabel %>
+          <% if (m.missing) { %><span class="badge badge-needs">Ziel weg</span><% } %>
+        </div>
+      </div>
+      <div class="row">
+        <a class="btn btn-sm" href="/nachricht?kind=<%= m.kind %>&load=<%= m.id %>">Öffnen</a>
+        <form method="post" action="/nachrichten/<%= m.id %>/kopieren" class="inline-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn-sm">Kopie anlegen</button>
+        </form>
+        <form method="post" action="/nachrichten/<%= m.id %>/loeschen" class="inline-form" data-confirm="„<%= m.name %>“ wirklich löschen?">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn-sm btn-danger"><%- icons.trash %></button>
+        </form>
+      </div>
+    </div>
+    <details>
+      <summary class="card-row muted">Umbenennen, Art ändern, Notiz</summary>
+      <div class="card-body">
+        <form method="post" action="/nachrichten/<%= m.id %>/aktualisieren">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="grid-2">
+            <div class="field">
+              <label class="field-label">Name</label>
+              <input class="input" type="text" name="name" value="<%= m.name %>">
+            </div>
+            <div class="field">
+              <label class="field-label">Art</label>
+              <select class="input" name="kind">
+                <option value="dm" <%= m.kind === 'dm' ? 'selected' : '' %>>Direktnachricht</option>
+                <option value="channel" <%= m.kind === 'channel' ? 'selected' : '' %>>Kanal</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Notiz</label>
+            <input class="input" type="text" name="note" value="<%= m.note %>">
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">Speichern</button>
+        </form>
+      </div>
+    </details>
+  </div>
+<% }); %>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,47 @@
+<%- include('partials/header') %>
+
+<div class="page-header">
+  <h1>Protokoll</h1>
+  <p>Jede Aktion des Bots und des Teams, nachvollziehbar mit Zeit und Ergebnis.</p>
+</div>
+
+<form method="get" action="/protokoll" class="row" role="search">
+  <input class="input" type="search" name="q" placeholder="Suche nach Person, Kanal oder Vorgang …" value="<%= search %>">
+  <button type="submit" class="btn">Suchen</button>
+</form>
+
+<div class="tabs">
+  <a class="tab <%= kind==='alle'?'active':'' %>" href="?kind=alle<%= search ? '&q='+encodeURIComponent(search):'' %>">Alle <span class="count"><%= counts.alle %></span></a>
+  <a class="tab <%= kind==='nachricht'?'active':'' %>" href="?kind=nachricht<%= search ? '&q='+encodeURIComponent(search):'' %>">Nachrichten <span class="count"><%= counts.nachricht %></span></a>
+  <a class="tab <%= kind==='rolle'?'active':'' %>" href="?kind=rolle<%= search ? '&q='+encodeURIComponent(search):'' %>">Rollen <span class="count"><%= counts.rolle %></span></a>
+  <a class="tab <%= kind==='anmeldung'?'active':'' %>" href="?kind=anmeldung<%= search ? '&q='+encodeURIComponent(search):'' %>">Anmeldungen <span class="count"><%= counts.anmeldung %></span></a>
+  <a class="tab <%= kind==='fehler'?'active':'' %>" href="?kind=fehler<%= search ? '&q='+encodeURIComponent(search):'' %>">Fehler <span class="count"><%= counts.fehler %></span></a>
+</div>
+
+<% if (!groups.length) { %>
+  <div class="empty-state"><h3>Keine Einträge</h3><p>Für diese Auswahl gibt es nichts im Protokoll.</p></div>
+<% } %>
+
+<% groups.forEach(function(g){ %>
+  <div class="log-day"><%= g.label %></div>
+  <% g.entries.forEach(function(r){ %>
+    <div class="log-entry <%= r.success ? '' : 'failed' %>">
+      <span class="dot"></span>
+      <div class="summary">
+        <%= r.summary %>
+        <% if (r.reason) { %><div class="reason"><%= r.reason %></div><% } %>
+      </div>
+      <span class="time"><%= new Date(r.created_at + 'Z').toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}) %></span>
+    </div>
+  <% }); %>
+<% }); %>
+
+<% if (totalPages > 1) { %>
+  <div class="row pagination-row">
+    <% for (var p=1; p<=totalPages; p++) { %>
+      <a class="btn btn-sm <%= p===page ? 'btn-primary':'' %>" href="?kind=<%= kind %>&page=<%= p %><%= search ? '&q='+encodeURIComponent(search):'' %>"><%= p %></a>
+    <% } %>
+  </div>
+<% } %>
+
+<%- include('partials/footer') %>

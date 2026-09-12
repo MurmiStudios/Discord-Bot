@@ -1,0 +1,89 @@
+<%- include('partials/header') %>
+
+<div class="page-header">
+  <h1>Nachricht</h1>
+  <p><%= kind === 'dm' ? recipientChips.length + ' Empfänger' : (channel ? 'Kanal · ' + channel.name : 'Kein Kanal gewählt') %></p>
+  <div class="page-actions">
+    <button type="button" class="btn" id="drawer-open"><%- icons.folder %> Entwurf laden</button>
+    <button type="submit" form="composer-form" name="action" value="send" class="btn btn-primary"><%- icons.message %> Senden</button>
+  </div>
+</div>
+
+<form id="composer-form" method="post" action="/nachricht/senden" data-context-label="<%= kind === 'dm' ? 'Direktnachricht' : 'Kanal' %>" data-actor-id="<%= user.id %>" data-actor-tag="<%= user.username %>">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <input type="hidden" name="kind" value="<%= kind %>">
+  <% if (messageId) { %><input type="hidden" name="messageId" value="<%= messageId %>"><% } %>
+
+  <div class="step-label">1 · Ziel</div>
+  <div class="tabs">
+    <a class="tab <%= kind === 'dm' ? 'active' : '' %>" href="?kind=dm" <%= kind === 'dm' ? 'aria-current="true"' : '' %>>Direktnachricht</a>
+    <a class="tab <%= kind === 'channel' ? 'active' : '' %>" href="?kind=channel" <%= kind === 'channel' ? 'aria-current="true"' : '' %>>Kanal</a>
+  </div>
+
+  <% if (kind === 'dm') { %>
+    <div class="field" id="recipient-field" data-max="<%= dmMaxRecipients %>">
+      <div class="chip-input" id="recipient-chips">
+        <% recipientChips.forEach(function(c){ %>
+          <span class="chip <%= c.missing ? 'chip-missing' : '' %>" data-id="<%= c.id %>">
+            <%= c.label %><% if (c.missing) { %> <span class="faint">(nicht mehr auf dem Server)</span><% } %>
+            <button type="button" aria-label="Entfernen"><%- icons.x %></button>
+          </span>
+          <input type="hidden" name="recipientIds" value="<%= c.id %>">
+        <% }); %>
+        <input type="text" class="chip-text" id="recipient-search" placeholder="Mitglied oder Rolle suchen …" autocomplete="off">
+      </div>
+      <div class="field-hint"><span id="recipient-count"><%= recipientChips.length %></span> von höchstens <%= dmMaxRecipients %> Empfängern · Pause zwischen zwei DMs: <%= (dmDelayMs/1000).toLocaleString('de-DE') %> s</div>
+    </div>
+  <% } else { %>
+    <div class="field">
+      <select class="input" name="channelId" id="channel-select">
+        <option value="">Kanal wählen …</option>
+        <% channelGroups.uncategorized.forEach(function(c){ %>
+          <option value="<%= c.id %>" <%= !c.can ? 'disabled' : '' %> <%= channel && channel.id === c.id ? 'selected' : '' %>>
+            <%= c.announcement ? '📢' : '#' %> <%= c.name %><%= c.can ? '' : ' — ' + c.reason %>
+          </option>
+        <% }); %>
+        <% channelGroups.categories.forEach(function(cat){ %>
+          <optgroup label="<%= cat.name %>">
+            <% cat.channels.forEach(function(c){ %>
+              <option value="<%= c.id %>" <%= !c.can ? 'disabled' : '' %> <%= channel && channel.id === c.id ? 'selected' : '' %>>
+                <%= c.announcement ? '📢' : '#' %> <%= c.name %><%= c.can ? '' : ' — ' + c.reason %>
+              </option>
+            <% }); %>
+          </optgroup>
+        <% }); %>
+      </select>
+      <% if (channel && channel.missing) { %><div class="notice notice-warning">Der zuletzt gewählte Kanal existiert nicht mehr.</div><% } %>
+    </div>
+  <% } %>
+
+  <%- include('partials/composer', { values: values, fieldRows: fieldRows, imageTemplates: imageTemplates, actionBars: actionBars, contextLabel: contextLabel, preview: preview }) %>
+
+  <div class="step-label">4 · Speichern</div>
+  <div class="row">
+    <input class="input" type="text" name="saveAs" placeholder="Name für die Ablage, z. B. Regelwerk-Ansage" value="<%= draftName %>">
+    <button type="submit" name="action" value="save" class="btn">Speichern</button>
+  </div>
+</form>
+
+<div class="search-overlay" id="drawer-overlay" hidden>
+  <div class="search-box">
+    <div class="card-head">
+      <h2>Entwurf laden</h2>
+      <button type="button" class="icon-btn" id="drawer-close" aria-label="Schliessen"><%- icons.x %></button>
+    </div>
+    <div class="search-results">
+      <% if (!savedMessages.length) { %>
+        <div class="combo-empty">Noch keine gespeicherten Nachrichten.</div>
+      <% } %>
+      <% savedMessages.forEach(function(m){ %>
+        <a href="/nachricht?kind=<%= m.kind %>&load=<%= m.id %>">
+          <strong><%= m.name %></strong>
+          <div class="faint"><%= m.kind === 'dm' ? 'Direktnachricht' : 'Kanal' %> · <%= (m.content || '').slice(0, 60) %></div>
+        </a>
+      <% }); %>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer', { extraScripts: ['/public/js/composer.js', '/public/js/recipients.js', '/public/js/drawer.js'] }) %>

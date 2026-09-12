@@ -1,0 +1,45 @@
+<%- include('partials/header') %>
+
+<div class="page-header">
+  <h1>Rückmeldungen</h1>
+  <p>Antworten aus den Eingabefenstern der Buttons.</p>
+  <div class="page-actions">
+    <a class="btn" href="/rueckmeldungen.csv<%= filterBarId ? '?bar='+filterBarId : '' %>"><%- icons.fileText %> Als CSV herunterladen</a>
+  </div>
+</div>
+
+<div class="tabs">
+  <a class="tab <%= !filterBarId ? 'active' : '' %>" href="/rueckmeldungen">Alle Buttons</a>
+  <% bars.forEach(function(b){ %>
+    <a class="tab <%= filterBarId === b.id ? 'active' : '' %>" href="?bar=<%= b.id %>"><%= b.name %></a>
+  <% }); %>
+</div>
+
+<% if (!items.length) { %>
+  <div class="empty-state"><h3>Noch keine Rückmeldungen</h3><p>Antworten aus dem „Rückmeldung erfragen“-Button einer Aktionsleiste erscheinen hier.</p></div>
+<% } %>
+
+<% items.forEach(function(r){ %>
+  <div class="card">
+    <div class="card-row">
+      <div>
+        <div class="row-title"><%= r.user_tag %> <span class="faint">· „<%= r.button_label %>“</span></div>
+        <div class="row-sub"><%= new Date(r.submitted_at + 'Z').toLocaleString('de-DE') %></div>
+      </div>
+      <form method="post" action="/rueckmeldungen/<%= r.id %>/loeschen?back=<%= encodeURIComponent(currentPath + (filterBarId ? '?bar='+filterBarId : '')) %>" class="inline-form" data-confirm="Rückmeldung wirklich löschen?">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit" class="btn btn-sm btn-danger"><%- icons.trash %></button>
+      </form>
+    </div>
+    <div class="card-body">
+      <% r.answers.forEach(function(a){ %>
+        <div class="field">
+          <div class="field-label"><%= a.question %></div>
+          <div><%= a.answer %></div>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+<% }); %>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,11 @@
+  </main>
+
+  <script src="/public/js/app.js"></script>
+  <% if (typeof extraScript !== 'undefined' && extraScript) { %>
+    <script src="<%= extraScript %>"></script>
+  <% } %>
+  <% if (typeof extraScripts !== 'undefined' && extraScripts) { %>
+    <% extraScripts.forEach(function(src){ %><script src="<%= src %>"></script><% }); %>
+  <% } %>
+</body>
+</html>

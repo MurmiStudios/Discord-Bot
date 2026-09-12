@@ -1,0 +1,33 @@
+<%- include('partials/header') %>
+
+<div class="page-header">
+  <h1>Willkommensnachricht</h1>
+  <p>Geht bei jedem Serverbeitritt automatisch als Direktnachricht raus.</p>
+  <div class="page-actions">
+    <form method="post" action="/willkommen/test" class="inline-form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button type="submit" class="btn">Test-DM an mich</button>
+    </form>
+    <button type="submit" form="composer-form" class="btn btn-primary">Speichern</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-row">
+    <div>
+      <div class="row-title">Aktiv</div>
+      <div class="row-sub">Ausgeschaltet bleibt alles gespeichert, geht aber bei einem Beitritt nicht raus.</div>
+    </div>
+    <label class="switch">
+      <input type="checkbox" name="active" form="composer-form" <%= active ? 'checked' : '' %>>
+      <span class="track"><span class="thumb"></span></span>
+    </label>
+  </div>
+</div>
+
+<form id="composer-form" method="post" action="/willkommen/speichern" data-context-label="Direktnachricht bei Serverbeitritt">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <%- include('partials/composer', { values: values, fieldRows: fieldRows, imageTemplates: imageTemplates, actionBars: actionBars, contextLabel: contextLabel, preview: preview }) %>
+</form>
+
+<%- include('partials/footer', { extraScript: '/public/js/composer.js' }) %>

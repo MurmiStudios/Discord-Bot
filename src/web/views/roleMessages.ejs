@@ -1,0 +1,49 @@
+<%- include('partials/header') %>
+
+<div class="page-header">
+  <h1>Rollen-Nachrichten</h1>
+  <p>Eine eigene Direktnachricht je Rolle.</p>
+  <div class="page-actions">
+    <form method="post" action="/rollen-nachrichten/senden-an-alle" class="inline-form" data-confirm="Jetzt an alle Mitglieder mit dieser Rolle senden?">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="roleId" value="<%= selectedRoleId %>">
+      <button type="submit" class="btn" <%= selectedRole ? '' : 'disabled' %>>Jetzt an alle senden<%= selectedRole ? ' (' + selectedRole.memberCount + ')' : '' %></button>
+    </form>
+    <button type="submit" form="composer-form" class="btn btn-primary">Speichern</button>
+  </div>
+</div>
+
+<% if (!roles.length) { %>
+  <div class="empty-state"><h3>Keine Rollen gefunden</h3><p>Der Bot ist nicht verbunden oder der Server hat keine Rollen.</p></div>
+<% } else { %>
+  <div class="step-label">Rolle</div>
+  <div class="pill-select">
+    <% roles.forEach(function(r){ %>
+      <a class="pill <%= r.selected ? 'selected' : '' %>" href="?role=<%= r.id %>">
+        <%= r.name %> <span class="count"><%= r.memberCount %></span>
+        <% if (r.hasMessage) { %><span class="badge badge-success">●</span><% } %>
+      </a>
+    <% }); %>
+  </div>
+
+  <div class="card">
+    <div class="card-row">
+      <div>
+        <div class="row-title">Aktiv</div>
+        <div class="row-sub">Löst automatisch aus, sobald jemand die Rolle bekommt.</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" name="active" form="composer-form" <%= active ? 'checked' : '' %>>
+        <span class="track"><span class="thumb"></span></span>
+      </label>
+    </div>
+  </div>
+
+  <form id="composer-form" method="post" action="/rollen-nachrichten/speichern" data-context-label="<%= contextLabel %>" data-role-name="<%= selectedRole ? selectedRole.name : '' %>">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="roleId" value="<%= selectedRoleId %>">
+    <%- include('partials/composer', { values: values, fieldRows: fieldRows, imageTemplates: imageTemplates, actionBars: actionBars, contextLabel: contextLabel, preview: preview }) %>
+  </form>
+<% } %>
+
+<%- include('partials/footer', { extraScript: '/public/js/composer.js' }) %>

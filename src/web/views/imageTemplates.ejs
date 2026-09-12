@@ -1,0 +1,125 @@
+<%- include('partials/header') %>
+
+<div class="page-header">
+  <h1>Bildvorlagen</h1>
+  <p>Ein Bild pro Person — Profilbild und Name werden beim Senden eingesetzt.</p>
+  <div class="page-actions">
+    <a class="btn btn-primary" href="/vorlagen"><%- icons.plus %> Vorlage anlegen</a>
+  </div>
+</div>
+
+<form method="post" action="/vorlagen/speichern" id="tpl-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <% if (editing) { %><input type="hidden" name="templateId" value="<%= editing.id %>"><% } %>
+
+  <div class="step-label">1 · Name und Format</div>
+  <div class="field">
+    <input class="input" type="text" name="name" placeholder="z. B. Willkommenskarte" value="<%= values.name %>">
+  </div>
+  <div class="pill-select">
+    <label class="pill"><input class="visually-hidden" type="radio" name="preset" value="breit" <%= values.preset==='breit'?'checked':'' %>>Breit <span class="count">1200×600</span></label>
+    <label class="pill"><input class="visually-hidden" type="radio" name="preset" value="quadratisch" <%= values.preset==='quadratisch'?'checked':'' %>>Quadratisch <span class="count">800×800</span></label>
+    <label class="pill"><input class="visually-hidden" type="radio" name="preset" value="banner" <%= values.preset==='banner'?'checked':'' %>>Banner <span class="count">1920×480</span></label>
+    <label class="pill"><input class="visually-hidden" type="radio" name="preset" value="eigen" <%= values.preset==='eigen'?'checked':'' %>>Eigene Grösse</label>
+  </div>
+  <div class="row field-row">
+    <label class="field-label mt-0">Breite <input class="input" type="number" name="width" min="200" max="2400" value="<%= values.width %>"></label>
+    <label class="field-label mt-0">× Höhe <input class="input" type="number" name="height" min="200" max="2400" value="<%= values.height %>"></label>
+  </div>
+
+  <div class="step-label">2 · Hintergrund</div>
+  <div class="card">
+    <div class="card-row">
+      <div>
+        <div class="row-title">Eigenes Hintergrundbild</div>
+        <div class="row-sub">Ohne Bild wird die Grundfarbe verwendet</div>
+      </div>
+      <input type="file" id="bg-upload" accept="image/png,image/jpeg,image/webp">
+    </div>
+    <div class="card-body">
+      <input type="hidden" name="bgType" id="bg-type" value="<%= values.bg_type || values.bgType || 'color' %>">
+      <input type="hidden" name="bgImagePath" id="bg-image-path" value="<%= values.bg_image_path || '' %>">
+      <div class="row">
+        <label class="field-label mt-0">Grundfarbe <input class="input" type="color" name="bgColor" value="<%= values.bg_color || values.bgColor %>"></label>
+        <label class="field-label mt-0">Abdunklung <input class="input" type="range" name="bgDim" min="0" max="1" step="0.05" value="<%= values.bg_dim != null ? values.bg_dim : 0 %>"></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-label">3 · Profilbild</div>
+  <div class="card">
+    <div class="card-row">
+      <div>
+        <div class="row-title">Profilbild einsetzen</div>
+        <div class="row-sub">Wird beim Senden aus dem Discord-Profil geladen</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" name="avatarEnabled" <%= values.avatar.enabled ? 'checked':'' %>>
+        <span class="track"><span class="thumb"></span></span>
+      </label>
+    </div>
+    <div class="card-body">
+      <div class="pill-select mb-0">
+        <label class="pill"><input class="visually-hidden" type="radio" name="avatarShape" value="round" <%= values.avatar.shape==='round'?'checked':'' %>>Rund</label>
+        <label class="pill"><input class="visually-hidden" type="radio" name="avatarShape" value="rounded" <%= values.avatar.shape==='rounded'?'checked':'' %>>Abgerundet</label>
+        <label class="pill"><input class="visually-hidden" type="radio" name="avatarShape" value="square" <%= values.avatar.shape==='square'?'checked':'' %>>Quadratisch</label>
+      </div>
+      <div class="row field-row">
+        <label class="field-label mt-0">X <input class="input" type="number" name="avatarX" value="<%= values.avatar.x %>"></label>
+        <label class="field-label mt-0">Y <input class="input" type="number" name="avatarY" value="<%= values.avatar.y %>"></label>
+        <label class="field-label mt-0">Grösse <input class="input" type="number" name="avatarSize" value="<%= values.avatar.size %>"></label>
+        <label class="field-label mt-0">Rand <input class="input" type="number" name="avatarBorder" value="<%= values.avatar.border %>"></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-label">4 · Textzeilen <span class="faint"><%= lineRows.filter(function(l){return l.text}).length %> von <%= maxLines %></span></div>
+  <% lineRows.forEach(function(l, i){ %>
+    <div class="card">
+      <div class="card-body">
+        <div class="field">
+          <input class="input" type="text" name="lines[<%= i %>][text]" placeholder="Text … {user} {tag} {guild} {role} {count}" value="<%= l.text %>">
+        </div>
+        <div class="row">
+          <label class="field-label mt-0">Grösse <input class="input" type="number" name="lines[<%= i %>][size]" value="<%= l.size %>"></label>
+          <label class="field-label mt-0">Farbe <input class="input" type="color" name="lines[<%= i %>][color]" value="<%= l.color %>"></label>
+          <select class="input" name="lines[<%= i %>][align]">
+            <option value="left" <%= l.align==='left'?'selected':'' %>>Links</option>
+            <option value="center" <%= l.align==='center'?'selected':'' %>>Mitte</option>
+            <option value="right" <%= l.align==='right'?'selected':'' %>>Rechts</option>
+          </select>
+          <label class="switch" title="Schatten">
+            <input type="checkbox" name="lines[<%= i %>][shadow]" <%= l.shadow ? 'checked':'' %>>
+            <span class="track"><span class="thumb"></span></span>
+          </label>
+        </div>
+        <div class="row field-row">
+          <label class="field-label mt-0">X <input class="input" type="number" name="lines[<%= i %>][x]" value="<%= l.x == null ? '' : l.x %>"></label>
+          <label class="field-label mt-0">Y <input class="input" type="number" name="lines[<%= i %>][y]" value="<%= l.y == null ? '' : l.y %>"></label>
+          <label class="field-label mt-0">Max. Breite <input class="input" type="number" name="lines[<%= i %>][maxWidth]" value="<%= l.maxWidth %>"></label>
+        </div>
+      </div>
+    </div>
+  <% }); %>
+
+  <div class="page-actions">
+    <button type="submit" class="btn btn-primary"><%= editing ? 'Speichern' : 'Vorlage anlegen' %></button>
+  </div>
+</form>
+
+<div class="step-label">Vorschau</div>
+<div class="discord-preview">
+  <% if (previewDataUrl) { %>
+    <img class="standalone-image tpl-preview-img" id="tpl-preview-img" src="<%= previewDataUrl %>" alt="Vorschau der Bildvorlage">
+  <% } else { %>
+    <p class="muted">Vorschau nicht verfügbar.</p>
+  <% } %>
+</div>
+<% if (editing && botOnline) { %>
+  <div class="field" id="member-preview">
+    <label class="field-label">Vorschau mit echten Mitgliedern</label>
+    <input class="input" type="text" id="member-preview-search" placeholder="Mitglied suchen …" autocomplete="off">
+  </div>
+<% } %>
+
+<%- include('partials/footer', { extraScripts: ['/public/js/imageTemplateEditor.js'] }) %>

@@ -1,0 +1,206 @@
+<%- include('partials/header') %>
+<%
+  function actionOf(b) { return (b && b.actions && b.actions[0]) || {}; }
+  function fieldOf(b, i, key) { var a = actionOf(b); return (a.fields && a.fields[i] && a.fields[i][key]) || ''; }
+%>
+
+<div class="page-header">
+  <h1>Aktionsleisten</h1>
+  <p>Buttons unter einer Nachricht, die beim Klick etwas auslösen — einmal angelegt, in jeder Nachricht wiederverwendbar.</p>
+  <div class="page-actions">
+    <a class="btn btn-primary" href="/aktionsleisten"><%- icons.plus %> Leiste anlegen</a>
+  </div>
+</div>
+
+<form method="post" action="/aktionsleisten/speichern" id="ab-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <% if (editing) { %><input type="hidden" name="barId" value="<%= editing.id %>"><% } %>
+
+  <div class="step-label">1 · Name der Leiste</div>
+  <div class="field">
+    <input class="input" type="text" name="name" placeholder="z. B. Regeln akzeptieren" value="<%= name %>">
+    <div class="field-hint">Unter diesem Namen wählst du die Leiste später im Nachrichten-Editor.</div>
+  </div>
+
+  <div class="step-label">2 · Buttons <span class="faint"><%= buttonRows.filter(Boolean).length %> von <%= maxButtons %></span></div>
+
+  <% buttonRows.forEach(function(b, i){ var a = actionOf(b); %>
+    <div class="card button-row">
+      <div class="card-body">
+        <div class="row">
+          <input class="input btn-emoji" type="text" name="buttons[<%= i %>][emoji]" placeholder="🙂" maxlength="8" value="<%= b ? b.emoji : '' %>">
+          <input class="input" type="text" name="buttons[<%= i %>][label]" placeholder="Beschriftung" maxlength="80" value="<%= b ? b.label : '' %>">
+          <select class="input btn-style" name="buttons[<%= i %>][style]">
+            <option value="blue" <%= b && b.style==='blue' ? 'selected':'' %>>Blau</option>
+            <option value="grey" <%= !b || b.style==='grey' ? 'selected':'' %>>Grau</option>
+            <option value="green" <%= b && b.style==='green' ? 'selected':'' %>>Grün</option>
+            <option value="red" <%= b && b.style==='red' ? 'selected':'' %>>Rot</option>
+            <option value="link" <%= b && b.style==='link' ? 'selected':'' %>>Link</option>
+          </select>
+        </div>
+
+        <input type="hidden" name="buttons[<%= i %>][id]" value="<%= b ? b.id : '' %>">
+
+        <div class="row action-fields" data-for="link">
+          <input class="input" type="url" name="buttons[<%= i %>][url]" placeholder="https://…" value="<%= b ? b.url : '' %>">
+        </div>
+
+        <div class="row">
+          <select class="input btn-action" name="buttons[<%= i %>][action]">
+            <option value="none" <%= !a.type ? 'selected':'' %>>keine Aktion</option>
+            <option value="dm_clicker" <%= a.type==='dm_clicker' ? 'selected':'' %>>DM an den Klickenden</option>
+            <option value="dm_fixed" <%= a.type==='dm_fixed' ? 'selected':'' %>>DM an feste/gewählte Person</option>
+            <option value="role_add" <%= a.type==='role_add' ? 'selected':'' %>>Rolle geben</option>
+            <option value="role_remove" <%= a.type==='role_remove' ? 'selected':'' %>>Rolle entfernen</option>
+            <option value="role_toggle" <%= a.type==='role_toggle' ? 'selected':'' %>>Rolle umschalten</option>
+            <option value="feedback_modal" <%= a.type==='feedback_modal' ? 'selected':'' %>>Rückmeldung erfragen</option>
+            <option value="kick" <%= a.type==='kick' ? 'selected':'' %>>Klickenden kicken</option>
+          </select>
+        </div>
+
+        <div class="action-fields" data-for="dm_clicker,dm_fixed">
+          <textarea class="input" name="buttons[<%= i %>][content]" rows="2" placeholder="DM-Text … {user} {clicker} {feedback}"><%= a.content || '' %></textarea>
+        </div>
+        <div class="row action-fields" data-for="dm_fixed">
+          <select class="input" name="buttons[<%= i %>][targetMode]">
+            <option value="fixed" <%= a.targetMode!=='pick' ? 'selected':'' %>>feste Person</option>
+            <option value="pick" <%= a.targetMode==='pick' ? 'selected':'' %>>beim Klick wählen</option>
+          </select>
+          <input class="input" type="text" name="buttons[<%= i %>][targetUserId]" placeholder="Nutzer-ID (fest)" value="<%= a.targetUserId || '' %>">
+          <select class="input" name="buttons[<%= i %>][restrictRoleId]">
+            <option value="">Wahl auf Rolle eingrenzen: keine</option>
+            <% roles.forEach(function(r){ %><option value="<%= r.id %>" <%= a.restrictRoleId===r.id?'selected':'' %>><%= r.name %></option><% }); %>
+          </select>
+        </div>
+
+        <div class="row action-fields" data-for="role_add,role_remove,role_toggle">
+          <select class="input" name="buttons[<%= i %>][roleId]">
+            <option value="">Rolle wählen …</option>
+            <% roles.forEach(function(r){ %><option value="<%= r.id %>" <%= a.roleId===r.id?'selected':'' %>><%= r.name %></option><% }); %>
+          </select>
+        </div>
+
+        <div class="action-fields" data-for="feedback_modal">
+          <input class="input field-row" type="text" name="buttons[<%= i %>][feedbackTitle]" placeholder="Titel des Fensters" value="<%= a.title || '' %>">
+          <% for (var f=0; f<3; f++) { %>
+            <div class="row field-row">
+              <input class="input" type="text" name="buttons[<%= i %>][feedbackFields][<%= f %>][label]" placeholder="Frage <%= f+1 %>" value="<%= fieldOf(b,f,'label') %>">
+              <select class="input" name="buttons[<%= i %>][feedbackFields][<%= f %>][fieldStyle]">
+                <option value="short" <%= fieldOf(b,f,'style')!=='paragraph' ? 'selected':'' %>>kurz</option>
+                <option value="paragraph" <%= fieldOf(b,f,'style')==='paragraph' ? 'selected':'' %>>mehrzeilig</option>
+              </select>
+              <label class="switch" title="Erforderlich">
+                <input type="checkbox" name="buttons[<%= i %>][feedbackFields][<%= f %>][required]" <%= fieldOf(b,f,'required') ? 'checked':'' %>>
+                <span class="track"><span class="thumb"></span></span>
+              </label>
+            </div>
+          <% } %>
+        </div>
+
+        <div class="row action-fields" data-for="kick">
+          <input class="input" type="text" name="buttons[<%= i %>][reason]" placeholder="Grund (optional)" value="<%= a.reason || '' %>">
+          <select class="input" name="buttons[<%= i %>][escapeRoleId]">
+            <option value="">ohne Ausweg-Rolle</option>
+            <% roles.forEach(function(r){ %><option value="<%= r.id %>" <%= a.escapeRoleId===r.id?'selected':'' %>><%= r.name %></option><% }); %>
+          </select>
+          <% if (!botCanKick) { %><span class="badge badge-needs">Bot fehlt „Mitglieder kicken“</span><% } %>
+        </div>
+
+        <div class="grid-2 field-row">
+          <div class="field">
+            <label class="field-label">Wer klicken darf (nichts = alle)</label>
+            <select class="input" name="buttons[<%= i %>][allowedRoleIds]" multiple size="3">
+              <% roles.forEach(function(r){ %>
+                <option value="<%= r.id %>" <%= b && b.allowedRoleIds && b.allowedRoleIds.includes(r.id) ? 'selected':'' %>><%= r.name %></option>
+              <% }); %>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label">Bestätigungstext (nur der Klickende sieht ihn)</label>
+            <input class="input" type="text" name="buttons[<%= i %>][replyText]" value="<%= b ? b.replyText : '' %>">
+          </div>
+        </div>
+
+        <% if (editing && b && clickCounts[b.id] != null) { %>
+          <div class="row field-row">
+            <span class="faint"><%= clickCounts[b.id] %> Klicks gespeichert</span>
+            <form method="post" action="/aktionsleisten/<%= editing.id %>/sperre-loeschen" class="inline-form">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <input type="hidden" name="buttonId" value="<%= b.id %>">
+              <button type="submit" class="btn btn-sm">Sperre zurücksetzen</button>
+            </form>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  <% }); %>
+
+  <% if (editing && editing.buttons.length) { %>
+    <div class="step-label">Vorschau</div>
+    <div class="discord-preview">
+      <div class="discord-buttons">
+        <% editing.buttons.forEach(function(b){ %>
+          <span class="discord-btn style-<%= b.style || 'grey' %>"><%= b.emoji ? b.emoji + ' ' : '' %><%= b.label %><%= b.style === 'link' ? ' ↗' : '' %></span>
+        <% }); %>
+      </div>
+      <% var withoutAction = editing.buttons.filter(function(b){ return b.style !== 'link' && (!b.actions || !b.actions.length); }); %>
+      <% if (withoutAction.length) { %>
+        <div class="notice notice-warning">Ohne Aktion würde ein Klick auf „<%= withoutAction.map(function(b){return b.label;}).join('“, „') %>“ nichts auslösen.</div>
+      <% } %>
+      <% var linksWithoutUrl = editing.buttons.filter(function(b){ return b.style === 'link' && !b.url; }); %>
+      <% if (linksWithoutUrl.length) { %>
+        <div class="notice notice-danger">Ein Link-Button hat noch keine Adresse. Discord lehnt die Nachricht ab, solange sie fehlt.</div>
+      <% } %>
+    </div>
+  <% } %>
+
+  <div class="step-label">3 · Verhalten</div>
+  <div class="card">
+    <div class="card-row">
+      <div>
+        <div class="row-title">Nur einmal pro Person</div>
+        <div class="row-sub">Nach dem ersten Klick sind die Buttons für diese Person gesperrt</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" name="oncePerMember" <%= oncePerMember ? 'checked':'' %>>
+        <span class="track"><span class="thumb"></span></span>
+      </label>
+    </div>
+    <div class="card-row">
+      <div>
+        <div class="row-title">Rückmeldung nur für den Klickenden</div>
+        <div class="row-sub">Andere im Kanal sehen die Bestätigung nicht</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" name="ephemeralReply" <%= ephemeralReply ? 'checked':'' %>>
+        <span class="track"><span class="thumb"></span></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="page-actions">
+    <button type="submit" class="btn btn-primary"><%= editing ? 'Speichern' : 'Leiste anlegen' %></button>
+  </div>
+</form>
+
+<div class="step-label">Bestehende Leisten <span class="count"><%= bars.length %></span></div>
+<% if (!bars.length) { %><p class="muted">Noch keine Aktionsleisten angelegt.</p><% } %>
+<% bars.forEach(function(bar){ %>
+  <div class="card">
+    <div class="card-row">
+      <div>
+        <div class="row-title"><%= bar.name %></div>
+        <div class="row-sub"><%= bar.buttons.length %> Button<%= bar.buttons.length===1?'':'s' %></div>
+      </div>
+      <div class="row">
+        <a class="btn btn-sm" href="/aktionsleisten?edit=<%= bar.id %>">Bearbeiten</a>
+        <form method="post" action="/aktionsleisten/<%= bar.id %>/loeschen" class="inline-form" data-confirm="„<%= bar.name %>“ wirklich löschen?">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn-sm btn-danger"><%- icons.trash %></button>
+        </form>
+      </div>
+    </div>
+  </div>
+<% }); %>
+
+<%- include('partials/footer', { extraScript: '/public/js/actionBarEditor.js' }) %>

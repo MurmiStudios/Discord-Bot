@@ -1,0 +1,88 @@
+<%- include('partials/header') %>
+
+<div class="page-header">
+  <h1>Rollenregeln</h1>
+  <p>Wer eine Rolle erhält, verliert automatisch die gewählten anderen.</p>
+  <div class="page-actions">
+    <a class="btn btn-primary" href="/rollenregeln"><%- icons.plus %> Regel anlegen</a>
+  </div>
+</div>
+
+<% if (!roles.length) { %>
+  <div class="empty-state"><h3>Keine Rollen gefunden</h3><p>Der Bot ist nicht verbunden oder der Server hat keine Rollen.</p></div>
+<% } else { %>
+<form method="post" action="/rollenregeln/speichern">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <% if (editing) { %><input type="hidden" name="ruleId" value="<%= editing.id %>"><% } %>
+
+  <div class="step-label">1 · Wenn diese Rolle vergeben wird</div>
+  <div class="pill-select">
+    <% roles.forEach(function(r){ %>
+      <label class="pill">
+        <input class="visually-hidden" type="radio" name="triggerRoleId" value="<%= r.id %>" <%= triggerRoleId === r.id ? 'checked' : '' %>>
+        <%= r.name %> <span class="count"><%= r.memberCount %></span>
+      </label>
+    <% }); %>
+  </div>
+
+  <div class="step-label">2 · … dann diese Rollen entfernen</div>
+  <div class="pill-select">
+    <% roles.forEach(function(r){ %>
+      <% var isTrigger = triggerRoleId === r.id; var locked = !!r.lockReason; %>
+      <label class="pill <%= locked || isTrigger ? 'locked' : '' %>" title="<%= isTrigger ? 'Die auslösende Rolle lässt sich nicht selbst entfernen' : (r.lockReason || '') %>">
+        <input class="visually-hidden" type="checkbox" name="removeRoleIds" value="<%= r.id %>"
+          <%= removeRoleIds.includes(r.id) ? 'checked' : '' %> <%= locked || isTrigger ? 'disabled' : '' %>>
+        <%= r.name %>
+        <% if (isTrigger) { %><span class="lock-note">Auslöser</span><% } else if (locked) { %><span class="lock-note"><%= r.lockReason %></span><% } %>
+      </label>
+    <% }); %>
+  </div>
+  <p class="field-hint">Die auslösende Rolle lässt sich nicht selbst entfernen — eine gerade vergebene Rolle wird nie entzogen. Rollen über der Bot-Rolle sind gesperrt.</p>
+
+  <div class="step-label">3 · Notiz und Status</div>
+  <div class="field">
+    <input class="input" type="text" name="note" placeholder="z. B. Ränge schliessen sich gegenseitig aus" value="<%= note %>">
+  </div>
+  <div class="card">
+    <div class="card-row">
+      <div>
+        <div class="row-title">Aktiv</div>
+        <div class="row-sub">Deaktivierte Regeln bleiben gespeichert, greifen aber nicht</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" name="active" <%= active ? 'checked' : '' %>>
+        <span class="track"><span class="thumb"></span></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="page-actions">
+    <button type="submit" class="btn btn-primary"><%= editing ? 'Speichern' : 'Regel anlegen' %></button>
+  </div>
+</form>
+<% } %>
+
+<div class="step-label">Bestehende Regeln <span class="count"><%= rules.length %></span></div>
+<% if (!rules.length) { %>
+  <p class="muted">Noch keine Rollenregeln angelegt.</p>
+<% } %>
+<% rules.forEach(function(r){ %>
+  <div class="card">
+    <div class="card-row">
+      <div>
+        <div class="row-title"><%= r.description %></div>
+        <% if (r.note) { %><div class="row-sub"><%= r.note %></div><% } %>
+      </div>
+      <div class="row">
+        <span class="badge <%= r.active ? 'badge-success' : 'badge-muted' %>"><%= r.active ? 'aktiv' : 'inaktiv' %></span>
+        <a class="btn btn-sm" href="/rollenregeln?edit=<%= r.id %>">Bearbeiten</a>
+        <form method="post" action="/rollenregeln/<%= r.id %>/loeschen" class="inline-form" data-confirm="Regel wirklich löschen?">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn-sm btn-danger"><%- icons.trash %></button>
+        </form>
+      </div>
+    </div>
+  </div>
+<% }); %>
+
+<%- include('partials/footer') %>
