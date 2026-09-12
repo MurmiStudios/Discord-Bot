@@ -19,7 +19,8 @@ router.get('/login', loginLimiter, (req, res) => {
     state,
     prompt: 'none',
   });
-  res.render('login', { title: 'Anmeldung', authUrl: `https://discord.com/api/oauth2/authorize?${params}` });
+  const bootstrapOpen = config.panelAdminIds.length === 0 && !repo.adminBootstrap.get();
+  res.render('login', { title: 'Anmeldung', authUrl: `https://discord.com/api/oauth2/authorize?${params}`, bootstrapOpen });
 });
 
 router.get('/auth/callback', loginLimiter, async (req, res) => {

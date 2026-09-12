@@ -114,3 +114,12 @@ CREATE TABLE IF NOT EXISTS sessions (
   expires INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires);
+
+-- Haelt fest, wer (falls PANEL_ADMIN_IDS leer ist) als erste Person mit
+-- Server-Administrator-Rechten den Panel-Administrator-Status erhalten hat.
+-- Nur eine Zeile, id=1 -- danach ist der Platz vergeben.
+CREATE TABLE IF NOT EXISTS admin_bootstrap (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  granted_user_id TEXT NOT NULL,
+  granted_at TEXT NOT NULL DEFAULT (datetime('now'))
+);

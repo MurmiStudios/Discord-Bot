@@ -9,6 +9,7 @@
     "node": ">=22.5.0"
   },
   "scripts": {
+    "setup": "node scripts/setup.js",
     "start": "node src/index.js",
     "dev": "nodemon src/index.js"
   },

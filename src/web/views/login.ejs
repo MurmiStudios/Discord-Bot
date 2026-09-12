@@ -7,5 +7,8 @@
     Deine Mitgliedschaft und Rollen auf dem Server entscheiden, was du siehst.
   </p>
   <a href="<%= authUrl %>" class="btn btn-primary btn-block">Mit Discord anmelden</a>
+  <% if (bootstrapOpen) { %>
+    <p class="notice notice-info">Noch kein Panel-Administrator eingerichtet: Die erste Anmeldung einer Person mit Server-Administrator-Rechten erhält automatisch vollen Zugriff.</p>
+  <% } %>
 </div>
 <%- include('partials/footer') %>

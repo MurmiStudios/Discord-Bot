@@ -392,4 +392,20 @@ const buttonClicks = {
   },
 };
 
-module.exports = { messages, welcome, roleMessages, roleRules, actionBars, imageTemplates, feedback, audit, buttonClicks };
+// ---- Erste-Anmeldung-wird-Admin (siehe discord/permissions.js) ----
+const adminBootstrap = {
+  // Traegt userId ein, falls noch niemand gewonnen hat, und gibt in jedem
+  // Fall die (dann feststehende) gewinnende User-ID zurueck.
+  getOrGrant(userId) {
+    db.prepare(
+      "INSERT INTO admin_bootstrap (id, granted_user_id) VALUES (1, @userId) ON CONFLICT(id) DO NOTHING"
+    ).run({ userId });
+    return db.prepare('SELECT granted_user_id FROM admin_bootstrap WHERE id = 1').get().granted_user_id;
+  },
+  get() {
+    const row = db.prepare('SELECT granted_user_id, granted_at FROM admin_bootstrap WHERE id = 1').get();
+    return row || null;
+  },
+};
+
+module.exports = { messages, welcome, roleMessages, roleRules, actionBars, imageTemplates, feedback, audit, buttonClicks, adminBootstrap };

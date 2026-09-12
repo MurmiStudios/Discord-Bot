@@ -1,10 +1,21 @@
 const { PermissionsBitField, ChannelType } = require('discord.js');
 const config = require('../config');
 const { getGuild } = require('./client');
+const repo = require('../db/repo');
 
 // Vier Zugriffsstufen, in Reihenfolge geprueft: Panel-Administrator schlaegt
 // alles, danach Server-Administrator (falls eingeschaltet), danach eine der
 // erlaubten Rollen. Alles andere -> kein Zugriff.
+//
+// Ist PANEL_ADMIN_IDS leer gelassen, wird die erste Person mit der
+// Discord-Berechtigung "Administrator" auf dem Server, die sich anmeldet,
+// automatisch zum Panel-Administrator -- das erspart das Nachschlagen der
+// eigenen Discord-ID beim Einrichten. Absichtlich auf Server-Administratoren
+// beschraenkt: sonst koennte irgendjemand mit einem Discord-Konto die
+// Anmeldeseite vor dem eigentlichen Betreiber aufrufen und sich selbst zum
+// Panel-Administrator machen. Sobald einmal jemand so bestaetigt wurde,
+// bleibt es dauerhaft dabei (in der Datenbank vermerkt) -- kein Wettlauf bei
+// jedem Neustart.
 async function resolveAccessLevel(discordUser) {
   if (config.panelAdminIds.includes(discordUser.id)) return 'panel_admin';
 
@@ -18,7 +29,14 @@ async function resolveAccessLevel(discordUser) {
     return null; // hat den Server verlassen oder ist nicht Mitglied
   }
 
-  if (config.panelServerAdminAccess && member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+  const isServerAdmin = member.permissions.has(PermissionsBitField.Flags.Administrator);
+
+  if (config.panelAdminIds.length === 0 && isServerAdmin) {
+    const winnerId = repo.adminBootstrap.getOrGrant(discordUser.id);
+    if (winnerId === discordUser.id) return 'panel_admin';
+  }
+
+  if (config.panelServerAdminAccess && isServerAdmin) {
     return 'server_admin';
   }
 

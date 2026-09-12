@@ -29,7 +29,7 @@ const sampleFieldRows = [{ name: '', value: '', inline: false }, { name: '', val
 const samplePreview = { content: 'Hallo Lena K.', embed: { title: 'T', description: 'D', fields: [{ name: 'N', value: 'V', inline: true }], footer: { text: 'F' } }, embedLength: 20, embedOverLimit: false, imageDataUrl: null, buttons: [{ label: 'Klick', style: 'blue', emoji: '👍' }] };
 
 const cases = [
-  ['login', { ...commonLocals, user: null, accessLabel: null, nav: null, authUrl: '#' }],
+  ['login', { ...commonLocals, user: null, accessLabel: null, nav: null, authUrl: '#', bootstrapOpen: true }],
   ['errors/403', { ...commonLocals, reason: 'Testgrund' }],
   ['errors/404', { ...commonLocals }],
   ['dashboard', { ...commonLocals, guildName: 'Testserver', memberCount: 42, stats: { sent24h: 1, failed24h: 0, savedMessages: 2, activeRules: 1, totalRules: 2 }, attention: [{ text: 'X', href: '/', cta: 'Ansehen' }], automations: [{ name: 'Willkommen', desc: 'D', active: true, href: '/willkommen' }], recent: [{ summary: 'Test', reason: null, success: 1, created_at: '2026-01-01 12:00:00' }] }],

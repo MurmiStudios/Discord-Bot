@@ -11,35 +11,57 @@ Panel läuft über Discord-OAuth2, kein eigenes Passwort.
   keine native Kompilierung nötig, `npm install` läuft überall ohne Build-Tools)
 - Ein Discord-Server, auf dem du Administratorrechte hast
 
-## 1. Discord-Anwendung anlegen
-
-1. Auf https://discord.com/developers/applications eine neue Anwendung anlegen.
-2. Unter **Bot**: einen Bot hinzufügen, das Bot-Token kopieren
-   (`DISCORD_BOT_TOKEN`). Unter **Privileged Gateway Intents** die
-   **Server Members Intent** einschalten — ohne sie sehen Willkommen,
-   Rollen-Nachrichten und Rollenregeln niemanden beitreten oder Rollen wechseln.
-3. Unter **OAuth2 → General**: Client-ID (`DISCORD_CLIENT_ID`) und Client-Secret
-   (`DISCORD_CLIENT_SECRET`) kopieren. Als Redirect einen Eintrag hinzufügen,
-   der exakt `DISCORD_REDIRECT_URI` entspricht, z. B.
-   `http://localhost:3000/auth/callback`.
-4. Unter **OAuth2 → URL Generator**: Scope `bot` wählen, Berechtigungen
-   mindestens `Send Messages`, `View Channels`, `Manage Roles`,
-   `Kick Members` (falls die Kick-Aktion genutzt wird). Die erzeugte URL
-   öffnen und den Bot auf den Server einladen. Seine Rolle muss über jeder
-   Rolle stehen, die er vergeben/entfernen soll.
-5. Die Server-ID (Rechtsklick auf den Server, „ID kopieren“, dafür
-   Entwicklermodus in den Discord-Einstellungen aktivieren) als
-   `DISCORD_GUILD_ID` eintragen.
-
-## 2. Einrichten
+## Schnellstart: `npm run setup`
 
 ```bash
-cp .env.example .env
-# .env ausfüllen: DISCORD_*, SESSION_SECRET (z. B. `openssl rand -hex 32`),
-# PANEL_ADMIN_IDS (deine eigene Discord-User-ID, damit du dich anmelden kannst)
-npm install
-npm start
+npm run setup
 ```
+
+Das Einrichtungsskript nimmt so viel wie möglich ab:
+
+- installiert alle Abhängigkeiten (`npm install`),
+- fragt nur das ab, was sich nicht automatisch herausfinden lässt
+  (Bot-Token, Client-Secret, Server-ID),
+- **prüft Bot-Token und Server-ID sofort live gegen die Discord-API** statt
+  das erst beim ersten Start scheitern zu lassen, und übernimmt die
+  Client-ID automatisch aus dem Token statt sie ein zweites Mal abzufragen,
+- erzeugt `SESSION_SECRET` automatisch,
+- zeigt die fertige Einladungs-URL für den Bot mit den nötigen
+  Berechtigungen an, wenn er noch nicht auf dem Server ist,
+- lässt die Admin-User-ID **leer lassen**: ohne `PANEL_ADMIN_IDS` wird
+  automatisch die erste Person mit Server-Administrator-Rechten, die sich im
+  Panel anmeldet, zum Panel-Administrator (siehe „Zugriffsstufen“ unten) —
+  das Nachschlagen der eigenen Discord-ID entfällt damit,
+- schreibt `.env` und bietet an, das Panel gleich zu starten.
+
+Das Skript ist beliebig oft erneut ausführbar — vorhandene Werte in `.env`
+werden dabei als Vorschlag übernommen, nichts wird stillschweigend ersetzt.
+Für den Bot selbst bleibt ein manueller Schritt übrig, den kein Skript
+automatisieren kann: die Anwendung unter
+https://discord.com/developers/applications anlegen, einen Bot hinzufügen,
+unter **Privileged Gateway Intents** die **Server Members Intent**
+einschalten (ohne sie sehen Willkommen, Rollen-Nachrichten und Rollenregeln
+niemanden beitreten oder Rollen wechseln) und Token + Client-Secret bereithalten
+— danach übernimmt `npm run setup` den Rest.
+
+<details>
+<summary>Manuell statt mit dem Setup-Skript</summary>
+
+1. Discord-Anwendung wie oben beschrieben anlegen.
+2. Unter **OAuth2 → General**: Client-ID und Client-Secret kopieren. Als
+   Redirect eine Adresse hinzufügen, die exakt `DISCORD_REDIRECT_URI`
+   entspricht, z. B. `http://localhost:3000/auth/callback`.
+3. Unter **OAuth2 → URL Generator**: Scope `bot`, Berechtigungen mindestens
+   `Send Messages`, `View Channels`, `Manage Roles`, `Embed Links`,
+   `Attach Files`, `Kick Members` (falls die Kick-Aktion genutzt wird). Die
+   erzeugte URL öffnen und den Bot einladen — seine Rolle muss über jeder
+   Rolle stehen, die er vergeben/entfernen soll.
+4. Die Server-ID (Entwicklermodus an, Rechtsklick auf den Server → „ID
+   kopieren“) als `DISCORD_GUILD_ID` eintragen.
+5. `cp .env.example .env`, Werte von Hand eintragen (`SESSION_SECRET` z. B.
+   mit `openssl rand -hex 32`), dann `npm install && npm start`.
+
+</details>
 
 Das Panel läuft danach auf `http://localhost:3000`. Beim ersten Start legt es
 `data/panel.sqlite` selbst an (Nachrichten, Vorlagen, Protokoll, Sitzungen —
@@ -59,6 +81,13 @@ Es gibt kein separates Panel-Passwort. Wer sich mit Discord anmeldet, sieht
 das Panel, wenn er:
 
 - in `PANEL_ADMIN_IDS` steht (**Panel-Administrator**), oder
+- **`PANEL_ADMIN_IDS` ist leer UND er ist die erste Person mit der
+  Discord-Berechtigung „Administrator“ auf dem Server, die sich je angemeldet
+  hat** — wird dann dauerhaft Panel-Administrator (in der Datenbank
+  vermerkt, kein Wettlauf bei jedem Neustart). Bewusst auf
+  Server-Administratoren beschränkt, damit nicht irgendjemand mit einem
+  beliebigen Discord-Konto die Anmeldeseite vor dir aufrufen und sich selbst
+  Zugriff verschaffen kann, oder
 - auf dem Server die Berechtigung „Administrator“ hat und
   `PANEL_SERVER_ADMIN_ACCESS=1` gesetzt ist (**Server-Administrator**), oder
 - eine Rolle aus `PANEL_ALLOWED_ROLE_IDS` hat (**berechtigte Rolle**).
@@ -76,6 +105,7 @@ src/
   discord/            Bot-Client, Event-Handler, Nachrichten-/Bild-Renderer
   web/                Express-App: Routen, Ansichten (EJS), CSS/JS
 assets/fonts/         Mitgelieferte Schrift für die Bildvorlagen (SIL OFL)
+scripts/setup.js               Interaktive Einrichtung, siehe `npm run setup`
 scripts/render-smoke-test.js   Rendert jede Ansicht einmal mit Beispieldaten
                                 (node scripts/render-smoke-test.js) — nützlich
                                 nach Änderungen an den .ejs-Dateien
